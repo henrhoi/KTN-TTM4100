@@ -408,10 +408,223 @@ En passiv mottaker kan lagre en kopi av hver pakke som flyr forbi, er kalt en **
 Evnen til å injisere pakker til Internett med en falsk kildeadresse kalles IP-spoofing, og er bare en av mange måter som en bruker kan maskerer som en annen bruker.
 
 
+<br></br>
+<br></br>
 
 
 <a name="kap2"></a>
-## Kapittel 2
+## Kapittel 2 - Application Layer
+
+
+### Principles of Network Applications
+
+	
+I en webapplikasjon er det to forskjellige programmer som kommuniserer med hverandre: nettleserprogrammet kjører i brukerens verts (skrivebord, bærbar PC, nettbrett, smarttelefon og så videre); og webserverprogrammet kjører i webserveren.
+
+
+
+#### Arkitekturer til nettverkapplikasjoner
+
+
+Applikasjonsarkitekturen er designet av applikasjonsutvikleren og dikterer hvorda applikasjonen er strukturert over flere endesystemer. Når man velger applikasjonsarkitekturen vil man gjerne velge mellom en av to dominerende arkitektiske paradigmer brukt i moderne nettverksapplikasjoner: *the client-server architecture* eller *peer-to-peer (P2P) architecture*.
+
+
+*	**Klient-server arkitektur:** I denne arkitekturen er det en alltid-på vert, kalt *serveren* som gir tjenestegjør forespørsler fra mange andre verter, kalt *klienter*. 
+	*	Et klassisk eksempel er webapplikasjonen som en kontinuerlig webservertjenester forespørsler fra nettlesere som kjører på klientverter.
+
+	
+*	**Peer-to-peer arkitektur:** I en P2P-arkitektur er det minimal (eller ingen) avhengighet av dedikerte servere i *datasentre*. I stedet utnytter programmet direkte kommunikasjon mellom par av periodisk tilkoblede verter, kalt *peers*. Klientene eies ikke av tjenesteleverandøren, men er i stedet desktops og bærbare datamaskiner kontrollert av brukerne, med de fleste kolleger bosatt i boliger, universiteter og kontorer. Fordi peer-ene kommuniserer uten å passere gjennom en dedikert server, kalles arkitekturen peer-to-peer. Mange av dagens mest populære og trafikkintensive applikasjoner er basert på P2P-arkitekturer.
+	*	En av de mest overbevisende funksjonene i P2P-arkitektur er deres **selvskalering**. For eksempel, i et P2P-fildelingsprogram, selv om hver peer genererer arbeidsbelastning ved å be om filer, legger hver peer også tjenestekapasitet til systemet ved å distribuere filer til andre peers.  
+
+	
+Men fremtidige P2P-applikasjoner står overfor tre store utfordringer:
+
+1.	*ISP Friendly.* De fleste boliger (inkludert DSL- og kabelleverandører) er dimensjonert for "asymmetrisk" båndbreddebruk, det vil si for mye mer
+nedstrøms enn oppstrøms trafikk. Men P2P-videostreaming- og fildistribusjonsapplikasjoner skifter oppstrøms trafikk fra servere til boliger, og legger dermed betydelig vekt på Internett-leverandørene.
+
+1.	*Sikkerhet.* På grunn av deres svært distribuerte og åpne natur kan P2P-applikasjoner være en utfordring å sikre
+
+1.	*Insentiver.* Suksessen til fremtidige P2P-applikasjoner avhenger også av overbevisende brukere til å frivillig gi båndbredde, lagrings- og beregningsressurser til applikasjonene, som er utfordringen med insentivdesign (Insentiv = noe som motiverer noen til å utføre en bestemt handling)
+
+
+
+
+#### Klient- og server-prosesser
+
+Vi sier at det ikke er programmer, men prosesser som kommuniserer. For eksempel i en webapplikasjon vil en klient-prosess utveklse meldinger med webserver-prosessen. For hvert par av kommuniserende prosesser, merker vi vanligvis en av de to prosessene som **klienten** og den andre prosessen som **serveren**. Vi definerer klient- og server-prosesser som følgende:
+
+*	I sammenheng med en kommunikasjonsøkt mellom et par prosesser merkes prosessen som initierer kommunikasjonen (det vil si i utgangspunktet kontakten med den andre prosessen i begynnelsen av økten) merket som *klienten*. 
+* Prosessen som venter på å bli kontaktet for å starte økten er *serveren*.
+
+
+
+#### Grensesnittet mellom prosessen og datanettverket
+
+En prosess sender meldinger inn i, og mottar meldinger fra, nettverket gjennom et programgrensesnitt som kalles en **socket**. 
+
+*	Dersom vi ser på en prosess som et hus, vil socketen være døren. 
+
+En socket er grensesnittet mellom applikasjonslaget og transportlaget innad en vert. Det refereres også som **Application Programming Inter- face (API)** mellom applikasjonen og nettverket. 
+
+![socket](https://i.imgur.com/QPIFAx2.png)
+
+
+#### Addresseringsprosesser
+
+For at en prosess kjørende på en vert skal kunne sende pakker til en annen prosess som kjører på den andre verten, så trenger den mottakende prosessen en adresse. For å identifisere mottakende prosesser, må to typer informasjon være spesifisert:
+
+1.	 Adressen til verten
+2. En identifikator som spesifiserer den mottakende prosessen i destinasjonsverten
+
+
+I internettet er en vert gjenkjent ved dens **IP addresse**. I tillegg til  vite adressen til verten, må den sendende prosessen også kunne identifisere den mottakende prosessen (mer spesifikt, den mottakende socket-en) Et destinasjons **portnummer** tjener denne hensikten.
+
+Populære applikasjoner har fått tidelt spesifikke portnummer. For eksempel er en webserver identifisert med portnummer 80, en mailserver-prosess (SMTP) har portnummer 25, og resten av listen finnes [her](http://www.iana.org).
+
+
+#### Transporttjenester tilgjengelige for applikasjoner
+
+Minnes om at en socket er grensesnittet mellom applikasjonsprosessen og transportlagsprotokollen. Hva er tjenestene som en transportlagsprotokoll kan tilby for applikasjoner som påberoper det? Vi kan i stor grad klassifisere de mulige tjenestene langs fire dimensjoner: pålitelig dataoverføring, gjennomstrømning, timing og sikkerhet.
+
+
+**Pålitelig dataoverføring:**
+
+Dersom en protokoll kan garantere at data som blir sendt fra en ende vil bli levert korrekt og komplett til den andre enden av applikasjonen, sier vi at den tilbyr *pålitelig overføring*.
+
+Når en transportlagprotokoll ikke gir pålitelig dataoverføring, kan noen av dataene som sendes av den sendende prosessen aldri komme til den mottakende prosessen. Dette kan være akseptabelt for **tapstolerante** **applikasjoner**, særlig multimedieapplikasjoner som konversasjonslyd/video som kan tåle noe tap av data.
+
+
+
+**Gjennomstrømning:**
+
+Programmer som har gjennomstrømningskrav, sies å være **båndbreddefølsomme** applikasjoner. Mange nåværende multimedieapplikasjoner er følsomme for båndbredde, selv om enkelte multimedieapplikasjoner kan bruke adaptive kodeteknikker for å kode digitalisert stemme eller video med en hastighet som samsvarer med den nåværende tilgjengelige gjennomføringen.
+
+Selv om båndbreddefølsomme applikasjoner har spesifikke krav til gjennomstrømning, kan **elastiske applikasjoner** benytte så mye eller lite gjennomstrømming som tilfeldigvis er tilgjengelig. Dette kan være elektronisk mail, filoverføring o.l.
+
+
+**Timing:**
+En transportlagsprotokoll kan også gi tidsgarantier. Som med gjennomstrømningsgarantier kan tidsgarantier komme i mange former og former. Et eksempel på garanti kan være at hver bit som avsenderen pumper inn i socket-en, kommer til mottakerens socket, ikke mer enn 100 ms senere.
+
+**Sikkerhet:**
+En transportprotokoll kan gi et program med en eller flere sikkerhetstjenester. Eksempelvis kan en transportprotokoll kryptere alle data som sendes av sendeprosessen, i mottakeren, og transportlagsprotokollen dekrypterer dataene før de leverer dataene til mottaksprosessen. En slik tjeneste vil gi konfidensialitet mellom de to prosessene, selv om dataene på en eller annen måte observeres mellom sende- og mottaksprosesser.
+
+
+
+#### TCP Services
+Når en applikasjon bruker TCP som sin transportprotokoll, vil applikasjonen få begge disse tjenestene fra TCP:
+
+*	*Connection-oriented service:* TCP får klienten og serveren til å utveksle transportlagskontroll informasjon med hverandre *før* applikasjonslagsmeldingene kan begynne å flyte. Dette er den såkalte handshaking-prosedyren, som lar klientene og serverene til å bli klare til å sende/motta pakker. 
+
+*	*Reliable data transfer service:* De kommuniserende prosessene kan vite at TCP levererer all data som blir sendt uten noen feil og i riktig rekkefølge. 
+
+
+TCP inkluderer også en opphopningskontroll-mekanisme, en tjeneste som endrer hastigheten på en sendingsprosess når nettverket er mett mellom sender og mottaker.
+
+
+#### UDP Services
+UDP er en *no-frills*, lett nettverksprotokoll, som tilbyr minimalt med tjenester. UDP er *connectionless*, så det er ingen handshaking før de to prosessene starter å kommunisere. 
+
+*	UDP tilbyr en unreliable data service, det betyr at det ikke er noen garanti på at pakker kommer frem. 
+* UDP tilbyr ingen opphopningskontroll-mekanisme.
+
+
+
+#### Application-Layer Protocols
+
+En applikasjonslagsprotokoll definerer:
+
+*	Typen meldinger som blir utveklset, for eksempel request-meldinger og response-meldinger
+* Syntaxen til de varierende melingstypene, sånn som hvilke felt som er i meldinger og hvordan feltene er avgrenset.
+* Semantikken til feletene, som betyr meningen til informasjonen i feltene
+* Reglene for å bestemme når og hvordan en prosess skal sende og respondere til meldinger
+
+
+ 
+
+### The Web and HTTP
+
+Protokollen **HyperText Transfer Protocol (HTTP)** er hjertet til internettet. HTTP er implementert i to programmer: et klientprogram og et serverprogram. Programmene kjører på forskjellige endesystemer, snakker med hverandre ved å utveklse HTTP-meldinger. HTTP definerer strukturen til disse meldingene og hvordan klienten og serveren utveksler disse meldingene. 
+
+
+En **nettside** (*document*) består av objekter. Et **objekt** er en fil, som en HTML-fil, et JPEG bilde, som kan addresses til gjennom en enkelt URL. De fleste nettsider består av en **base HTML fil** og flere refererte objekter. 
+
+Når en bruker *requester* om en nettside sender browseren en HTTP request-meldinger for ovbjektene på siden til serveren. Serveren mottar disse request-meldingene, og responderer med HTTP response-meldinger som inneholder objektene.
+
+HTTP bruker **TCP** som sin underliggende transportprotokoll. HTTP-klienten initierer først en TCP-tilkobling til serveren. Når tilkoblingen er etablert, vil browser og server prosessene aksessere TCP gjennom socket-interfacet sitt. 
+
+*	Som beskrevet over tilbyr TCP pålitelig dataoverføring til HTTP. Dette impliserer at hver HTTP request-melding sendt av en klient prosess kommer intakt ved serveren, på samme måte vil hver HTTP response-melding etterhvert komme intakt hos klienten. 
+
+* Det er viktig å merke seg at serverene ikke lagrer noen informasjon om klientene. På grunn av at en HTTP server ikke vedlikeholder noen informasjon om sine klienter, er HTTP en **stateless protocol**. 
+
+
+#### Non-Persistent and Persistent Connections
+
+* **Persistent** (*norsk. vedvarende* )
+
+Når en klient-server interaksjon finner sted over TCP, må applikasjonen ta en viktig avgjørelse, skal hvert request/respone-par sendes over en *separat* TCP-forbindelse, eller skal hver av disse requestene og deres korresponderende responser bli sendt over *samme* TCP-forbindelse. 
+
+En applikasjon er dermed sagt å være **ikke-vedvarende tilkoblinger** eller motsatt, **vedvarende tilkoblinger**.
+
+
+##### HTTP with Non-Persistent Connections
+
+La oss anta at en nettside innholder en HTML-fil og 10 JPEG bilder, og at alle disse 11 elementene ligger på samme server. Dette vil da skje:
+
+1. HTTP-klienten vil initiere en TCP-tilkobling med serveren.
+2. HTTP-klienten sender en HTTP request-melding til serveren.
+3. HTTP-server-prosessen sender en HTTP response-melding til klienten.
+4. HTTP-server-prosessen forteller TCP å lukke TCP-tilkoblingen når meldingen kommer frem. 
+5. HTTP-klienten mottar response-meldingen. TCP-tilkoblingen avsluttes. Klienten leser HTML-filen og finner referansene til de 10 JPEG-objektene.
+6. De fire første stegene blir så gjentatt for hvert JPEG-objekt.
+
+
+Før vi fortsetter, la oss estimere hvor lang tid det tar fra en klient *requester* HTML-basefilen til hele filen er mottat av klienten. Som sagt, definerer vi **round-trip time (RTT)** til å være tiden det tar for en pakke å reise fra en klient til server og tilbake til klienten. 
+
+Som vist i figuren under tvinger dette nettleseren til å initiere en TCP-tilkobling mellom nettleseren og Web-serveren; som involverer en "three-way handshake" - klienten sender et TCP-segment til serveren, serveren anerkjenner (*eng. acknowlegdges* ) og responderer med et TCP-sement, og til slutt, klienten anerkjenner tilbake til serveren.
+
+![RTT-HTTP](https://i.imgur.com/wcKccAH.png)
+
+* **Første** og **andre** del av "three-way handshake" tar en RTT. Etter dette sender klienten en HTTP request-melding kombinert med den **tredje** del av håndhilsingen (anerkjennelsen) inn i TCP-tilkoblingen. 
+* Når request-meldingen kommer til serveren, sender serveren HTML-filen inn i TCP-tilkoblingen. Denne HTTP request/respons bruker enda en RTT. 
+
+
+
+##### HTTP with Persistent Connections
+
+Ikke-vedvarende tilkoblingen kan ha noen mangler. For det første, en helt ny tilkobling må bli etablert og vedlikeholdt for *hvert forespurte objekt*. For hver av disse tilkoblingene må det tildeles TCP-buffere og -variabler. Dette kan være en byrde for Web-serveren, som muligens gjør slike forespørsler for flere hundre klienter samtidigt. Som beskrevet vil hvert objekt få leveringsforsinkelse på to RTT-er. 
+
+Med *vedvarende tilkoblinger* kan serveren la TCP-tilkoblingen være åpen etter den har sendt en respons. Senere requester og responser mellom samme klient og server kan bli sendt over samme tilkobling. 
+
+
+#### HTTP Message Format
+
+##### HTTP Request Message
+
+```
+GET /somedir/page.html HTTP/1.1
+Host: www.someschool.edu
+Connection: close
+User-agent: Mozilla/5.0 
+Accept-language: fr
+```
+
+* Første linje i meldingen kalles en **forespørsel-linje** (*eng. request line*), the påfølgende linjene er kalt **header-linjer**. Requestlinjen har tre felt: metodefelt, URL-felt og HTTP-versjon-felt.
+	* Metodefeltet kan ta inn forskjellige verdier, inkludert `GET`, `POST`, `HEAD`, `PUT`, og `DELETE`.
+	* Headerlinjen `Host:` spesifiserer hosten hvor objektet ligger. Ved å inkludere `Connection: close`i headerlinjen, forteller browseren serveren at den ikke trenger en vedvarende tilkobling (persistent). 
+	* Headerlinjen `User agent:` spesifiserer brukeragenten, som er browsertypen som gjør forespørselen på serveren.
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
