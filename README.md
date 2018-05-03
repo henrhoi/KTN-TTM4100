@@ -1730,6 +1730,433 @@ Fra TCP sitt synspunkt er det urettferdig at mutlimedia-applikasjoner bruker UDP
 
 Selvom vi kunne ha tvunget UDP-trafikken til å oppføre seg "fair", har vi ikke løst "fairness" problemet helt. Ingenting stopper TCP-baserte applikasjoner fra å kjøre paralelle koblinger, som gir dem en større andel av båndbredden på linken. 
 
+<a name="kap4"></a>
+## Kapittel 4 - The Network Layer
 
-## Chapter 4 - The Network Layer
+#### Forwarding and routing
+
+Rollen til nettverkslaget er enkelt - å flytte pakker fra den sendende verten til den mottakende verten. For å gjøre det så har nettverkslaget to viktige funksjoner:
+
+* *Forwarding.* Når en pakke mottas ved en ruters input-linken, må ruteren flytte pakken til riktig utgangslink. 
+
+* *Routing.* Nettverkslaget må bestemme ruten eller stien tatt av pakkene mens de flyter mellom sender og mottaker. Algoritmene som bestemmer disse stiene er kalt **routing algorithms**.
+
+> *Forwarding* refererer til ruterens lokale handling for å overføre en pakke fra et inngangslinkgrensesnitt til riktig utgangslinkgrensesnitt. 
+> 
+> *Routing* refererer til den nettverksbrede prosessen som bestemmer slutt-til-ende-banene som pakker tar fra kilde til destinasjon.
+
+
+Hver ruter har et **forwarding table**. En ruters videresender en pakke ved å se på verdien til et header-felt hos den mottatte pakken, og sammenlikner med indeksene i ruterens forwarding table. 
+
+Når vi refererer til termet *packet switch* (*nor. pakkesvitsj*) mener vi en generell pakkesvitsje-enhet, som overfører en pakke fra input-link grensesnitt til output-link grensesnitt. 
+
+* Noen pakkesvitsjer, som kalles **link-layer switches**, baserer deres videresendingsbeslutninger på verdier i feltene til linklagsrammen (*eng. frame*), og refereres til som *link-layer (layer 2) devices*. 
+
+* Andre pakkesvitsjer, kalt **rutere**, baserer deres videresendingsbeslutningerpå verdien i nettverklagsfeltet, og er dermed  *network-layer (layer 3) devices*. 
+
+#### Connecton Setup
+
+Vi sa nettopp at nettverkslaget har to viktige funksjoner, videresending og ruting. Men vi ser snart at i enkelte datanettverk er det faktisk en tredje viktig nettverkslagsfunksjon, nemlig **tilkoblingsoppsett** (*eng. connection setup*). 
+
+Husk at i TCP trengs det en treveishåndshake før data sendes. Dette gjør det mulig for avsenderen og mottakeren å sette opp nødvendig tilstandsinformasjon (for eksempel sekvensnummer og initiell flykontroll-vinduestørrelse). 
+
+På en analogisk måte vil noen nettverkslagsarkitekturer, for eksempel ATM, fram relay og MPLS, kreve at ruterne langs den valgte banen fra sender til mottaker  *"handshaker"* med hverandre for å sette opp tilstander før nettverkslagdatapakker innenfor en gitt kilde-til-destinasjon-tilkoblignen kan begynne å strømme. I nettverkslaget kalles denne prosessen som tilkoblingsoppsett.
+
+
+#### Network Service Models
+
+**Network service model** definerer egenskapene for ende-til-ende transport av pakker mellom sende- og mottaker-endesystemer.
+
+La oss nå vurdere noen mulige tjenester som nettverkslaget kan gi, etter at transportlaget har overført en pakke til nettverkslaget:
+
+* *Garantert levering.* Denne tjenesten garanterer at en pakke etter hvert vil ankomme destinasjonen sin.
+
+* *Garantert levering med maks. forsinkelse.* Denne tjenesten garanterer ikke bare at pakken kommer frem, men levering innen et spesifisert vert-til-vert-forsinkelse.
+ 
+* *In-order pakkelevering.* Denne tjenesten garanterer at pakkene kommer hos destinasjonen i rekkefølgen de ble sendt.
+
+* *Garantert minimal båndbredde.* Så lenge en sender kan overføre pakker under koblingens bitrate, kan tjenesten garantere ingen tap av pakker og at de kommer frem innen et spesifisert vert-til-vert-delay.
+ 
+* *Garantert maksimal jitter.* Denne tjenesten garanterer at tiden mellom overføringen av to pakker hos senderen er lik tidsforskjellen på mottakelsen av pakkene (eller mindre enn et spesifisert delay).
+
+* *Sikkerhetstjenester.* Ved å bruke en hemmelig nøkkel, kun kjent av kilde- og desnitasjonsvertene, kan man encrypte deler payloaden til datagrammet, og pakken er dermed konfidensiell mellom vertene. 
+
+![IATMABRCBR](https://i.imgur.com/A00su7P.png)
+
+
+Internettets nettverkslag er en såkalt *best effort* tjeneste, det vil egt si ingen tjeneste i det hele tatt. Med en best effort-tjeneste er ikke timingen mellom pakkene garantert, pakkenes rekkefølge ved ankommelse hos destinasjon eller heller ikke garantert, heller ikke om pakkene kommer frem i det hele tatt. 
+
+> Av denne definisjonen så ville et nettverk som leverte ingen av pakkene til destinasjonen tilfredsstille definisjonen av en best effort-tjeneste.
+
+To viktige ATM tjenestemodeller er *constant bit rate*- og *available bit rate*-tjenester:
+
+* **Constant bit rate (CBR) ATM network service**. Dette var første ATM tjenestemodell som ble standardisert, og reflekterer telefonselskapene sin intersse i ATM. Målet med *CBR* tjeneste er å tilby en flyt av pakker (cells  ATM-terminoloi) med et virtuelt rør hvis egenskaper er det samme som om en dedikert fastbåndbredde-overføringskobling eksisterte mellom sending og mottak av verter. Med CBR-tjenesten blir en strøm av ATM-celler båret over nettverket på en slik måte at en celles ende-til-ende forsinkelse, variabiliteten i en celle ende-til-ende forsinkelse (det vil si jitteren) og brøkdelen av celler som er tapt eller levert sent, er alle garantert å være mindre enn angitte verdier.
+
+* **Available bit rate (ABR) ATM network service**. Med Internett som tilbyr såkalt best-service-tjeneste, kan ATMs ABR best karakteriseres som en litt bedre enn best mulig service. Som med Internett-tjenestemodellen kan celler gå tapt under ABR-tjenesten. I motsetning til Internett, kan imidlertid ikke cellene ombestilles (selv om de kan gå tapt), og en minimums celleoverføringshastighet (MCR) garanteres til en tilkobling ved hjelp av ABR-tjenesten. 
+
+
+### What's Inside a Router
+
+En ruter har fire komponenter som kan bli identifisert:
+
+* *Input porter:* En inngangsport utfører en rekke nøkkelfunksjoner. Den utfører den fysiske-lagsfunksjonen ved å avslutte en innkommende fysisk link ved en ruter; Dette vises i den venstre boksen til inngangsporten og den høyre boksen til utgangsporten i figur 4.6. En inngangsport utfører også link-layer-funksjoner som trengs for å samvirke med link-layer på den andre siden av innkommende linken. Dette er representert av mellomkassene i inngangs- og utgangsportene. Kanskje mest avgjørende, **oppslagsfunksjonen** utføres også ved inngangsporten; Dette vil skje i den høyre boksen til inngangsporten. Det er her at videresendingstabellen blir konsultert for å bestemme utgangsporten til ruteren som en pakke vil bli videresendt via *swtching fabric*-en. Kontrollpakker (for eksempel pakker som bærer rutingsprotokollinformasjon) videresendes fra en inngangsport til rutingsprosessoren. 
+
+> Vær oppmerksom på at termen port her - som refererer til de fysiske inngangs- og utgangsrutergrensesnittene - er tydelig forskjellig fra programvareportene som er knyttet til nettverksapplikasjoner og socketsene som er omtalt i kapittel 2 og 3.
+
+* *Switching fabric:* Switching fabric-en kobler sammen ruterens inngangsporter til dens utgangsporter. Denne er kun inne i ruteren - et nettverk i en nettverksruter.
+
+* *Output porter:* En utgangsport lagrer pakker mottat fra switching fabric-et og sender disse pakkene til den utgående linken, ved å utføre nødvendige linklags- og fysisklags-funksjoner. 
+
+* *Routing processor:* Ruterprosessoren utførerer ruter-protokoller, vedlikeholder *routing tables* og tilstandsinformasjon til tilkoblede linker, og regner ut *forwarding table*-et for ruteren.  
+
+![ruterarkitektur](https://i.imgur.com/vk4V7mP.png)
+
+En ruters inngangsporter, utgangsporter og switchingfabric implementerer sammen forwarding-funksjonen. Disse forwarding-funksjonene er kollektivt referert til som **router forwarding plane**, som er implementert inn i maskinvaren. Forwarding-planet opererer på nanosekund-skaane, mens ruterens controlfunksjoner - som utfører ruterprotokollene, svarer koblinger, og utfører management-funksjoner, opererer på millisekund- eller sekund-skala. Disse **router control plane** funksjonene er vanligvis implementert inn i programvaren, og kjører på routing prosessoren. 
+
+#### Input-prosessering
+
+Som nevnt over, inngangsportens linjeterminering og link-lags prosessering implementerer det fysiske- og link-laget or den individuelle input-linken. 
+
+Inngangsporten skjekking (*eng. lookup*) er sentral for ruterens operasjoner - det er her ruteren bruker forwarding tabelen for å se opp hvilken utgangsport pakken skal bli forwardet til via switching fabricen. 
+
+Forwarding table-et blir utregnet og oppdatert av routing-prosessoren, med en "skygge-kopi" liggende hos hver inputport. Forwarding table-et blir kopiert fra ruterprosessoren til linjekortene over en separat buss indikert av den stiplede linjen på Figur 4.6 over. Med en skygge-kopi kan forwarding-beslutninger gjøres lokalt hos hver inngangsport, uten å spørre den sentraliserte prosessoren på en per-pakke-basis. Dermes *slippes* en **sentralisert flaskehals**. 
+ 
+![inputportprosessering](https://i.imgur.com/84pJ05T.png)
+
+Når en pakkes utgangsport har blitt bestemt via lookup-en, kan pakken bli sendt inn i switching fabric-en. I noen design vil pakker bli blokkert fra å gå inn i fabric-en dersom noen andre pakker fra andre inputporter bruker den. En blokket pakke blir satt i en kø hos inputporten, og som planlegges å gå inn i switching fabric-en senere. 
+
+Selvom denne *looku-en* er den viktigste aksjonen ved inputportprosessering, må mange andre handlinger bli gjort: (1) fysisk- og link-lagsprosessering må skjer, (2) pakkens versjonsnummer, checksum og time-to-live-felt må skjekkes, og de to sistnevnte må overskrives, og (3) tellere brukt til nettverksadministrering (som antall IP datagram motatt) må oppdateres. Denne inngangsportprosesseringen kan enkelt forklares med "match-and 
+
+
+#### Switching
+
+Switching fabric-en er hjertet til ruteren, det er gjennom dette stoffet at pakkene faktisk blir svitsjet (*altså forwardet*) fra inngangsport til utgangsport. Svitsjing kan bli utført på en rekke måter, vist i Figur 4.8.
+
+![switching](https://i.imgur.com/d0e7YGU.png)
+
+
+* *Switching via memory.* De enkelste, tidligste ruterne var tradisjonelle datamaskiner der svitsjingen mellom portene ble gjort under direkte kontroll av CPU-en. Inngang- og utgangsportene fungerte som tradisjonelle I/O enheter i et tradisjonelt operativsystem. 
+	* Når en pakke ankom på inngangsporten, sendte det en *interrupt* til CPU-en som kopierte pakken over til prosessorminnet. Prosessoren hentet så destinasjonsadressen fra headeren, skjekket passende utgangsport og kopierte pakken til utgangsportens buffer. Dersom båndbredden til CPU-ens minne B, som er antall pakker i sekundet som kan leses, skrives eller sendes, så må den totale videresendingstrømmen (den totale hastigheten som pakker overføres fra inngangsporter til utgangsportene) være mindre enn B / 2.
+
+* *Switching via a bus.* Ingangsporten overfører pakken direkte til utgangsporten over en *delt bus*, uten intervenering fra ruterprosessoren. Dette er vanligvis gjort ved å legge på en ekstra header-label som indikerer hvilken utgangsport den skal sendes fra. Pakken vil mottas av alle utgangsportene, men kun en port som matcher labelen, og beholder pakken. Label-en blir fjernet ved utgangsporten. Siden alle pakkene må over bussen, er ruterens svitsjing-hastighet begrenset av bussens hastighet.
+
+* *Switching via an interconnection network.* En måte å overkomme båndbreddebegrensing av en enkel, delt buss er å bruke et litt mer sofistikert interkoblet nettverk. En *crossbar-switch* er en sammenkoblingsnettverk bestående av 2*N* busser, som kobler sammen *N* inputporter med *N* utgangsporter, som vist over. Når en pakke skal fra port A til port Y, så vil switch-fabric-controlleren lukke krysspunktet ved krysset til bussene A og Y. 
+
+
+
+#### Output Processing
+
+Utgangsprossesering, vist i Figur 4.9 tar pakkers om er lagret hos utgangsportens minne og sender dm over til utgangs-linken. Dette inkluderer å selektere og de-queue pakker for seding, og utføre nødvendig link-lags- og fysisk-lags-overføringsfunksjoner
+
+![outputprocessing](https://i.imgur.com/1agYhop.png)
+
+
+#### Where does Queueing Occur?
+
+Som lett kan sees i Figur 3.8, er det klart at pakkekøer kan forme seg på både inngangsportene og utgangsportene - analogi kan være biler som kjører inn mot en rundkjøring. Plasseringen og omfanget av køen (enten ved inngangsportkøene eller i utgangskortkøene) vil avhenge av trafikkbelastningen, den relative hastigheten til koblingsmaterialet og linjens hastighet.
+
+Dersom en kø blir veldig stor og det ikke er plass til flere pakker, vil det ikke være plass til å lagre innkommende pakker, og vi vil oppleve **packet loss**.
+
+> Vi sier at pakken ble "mistet i nettverket" eller "sluppet hos ruteren"
+> 
+> Det er i disse ruterkøende at pakker blir droppet eller mistet.
+
+
+* Anta at inngang- og utgangslinjenes hastighetene (transmission rates) alle har en identisk overføringsrate på *R<sub>line</sub>* pakker per sukund, og at det er N inngangs- og N utgangsporter.
+* La oss definere switching fabric-ens overføringsrate *R<sub>switch</sub>* som raten av pakker som kan bli overført fra inngangsport til utgangsport. Dersom *R<sub>switch</sub>* er *N* ganger raskere enn *R<sub>line</sub>*, da vil det bare oppstå ubetydelig kø på inngangsportene, men det kan oppstå kø hos utgangsportene dersom mange av pakkene går til samme utgangsport. 
+
+
+![outportqueueing](https://i.imgur.com/MyzfOwo.png)
+
+
+> Tommelregelen for bufferstørrelse var i mangeår at mengde buffering (*B*) skulle være lik gjennomsnitts round-trip time (*RTT*) ganger linkens kapasitet (*C*). `B = RTT · C`
+
+
+* En konsekvens med utgangsportkø er at en **packet scheduler** ved utgangsporten må velge en pakke blant de som er i køen for overføring. Denne seleksjonen kan gjøres enkelt, FIFO-scheduling, eller en mer sofistikert måte, som *weighted fair queueing (WFQ)*, som deler utgangslinken fairly blandt de forskjellige ende-til-ende-tilkoblingene. 
+	* Packet scheduling spiller en viktig rolle for å tilby **quality-of-service guarantees**. 
+
+* Dersom det ikke er nok minne i bufferen til en innkommende pakken, må et valg tas om man enten skal droppe den innkommende pakken (kalles **drop-tail**) eller fjerne en eller flere av allerede kø-ede pakker, for å lage plass til den nyankommede pakken. 
+	* Vanlig er det vanlig å merke et header-felt om overbelastningssignal til senderen, *før* bufferen er full. Det finnes et antall pakke-dropping og -markeringspolicyer (kollektivt kjent som **active queue management (AQM) algoritmer**). 
+
+
+En av de mest studerte og implemterte AQM-algortimenene er **Random Early Detection (RED)** algoritmen. Under RED lages et threshold-intervall [*min<sub>th</sub>*, *max<sub>th</sub>*]. 
+
+*	Dersom den gjennomsnittlige kølengden er mindre enn *min<sub>th</sub>*, vil pakken legges i køen. 
+* Dersom køen er full eller den gjennomsnittlige kølengden er større *max<sub>th</sub>*, vil pakken markeres eller droppes. 
+* Dersom køen har en gjennomsnittskølengde i intervallet [*min<sub>th</sub>*, *max<sub>th</sub>*], vil pakken markeres eller droppes med en sannsynlighet som er en typsik funskjon av min- og max-thresholdet.
+
+Figur 4.11 viser et eksempel hvor to pakker (mørkt blå) på forsiden av inngangskøene er bestemt for samme øvre høyre utgangsport. Anta at switch-fabric velger å overføre pakken fra fronten av øvre venstre kø. I dette tilfellet må den mørkeblå pakken i nedre venstre kø vente. Men ikke bare må denne mørkeblå pakken vente, så også må den lyseblå pakken som står i køen bak den pakken i nedre venstre kø, selv om det ikke er noen tvil for midt-høyre utgangsporten (målet for den lyseblå pakke)n. 
+
+Dette fenomenet kalles **head-of-the-line-blokkering (HOL)** i en svitsj med inngangskø. 
+
+* En kø-pakke i en inngangskø må vente på overføring gjennom switching-fabric (*selv om utgangsporten er ledig*) fordi den er blokkert av en annen pakke forrerst på linjen.
+
+
+#### The Routing Control Plane
+
+I vår diskusjon hittil og i Figur 4.6 har vi implisitt antatt at *routing control plane* fullt ut ligger og utfører i en ruter
+prosessor innenfor ruteren. Det nettverksbrede *routing control plane*  er  desentralisert med forskjellige deler (for eksempel av en rutingsalgoritme) som utføres hos forskjellige rutere som interagerer med hvandre ved å sende kontrollmeldinger til hverandre. 
+
+
+### The Internet Protocol (IP): Forwarding and Addressing in the Internet
+
+Vi skal nå se at Internett adressering og forwarding er vitkige komponenter til Internet Protocol (IP). Det er to versjoner av IP i bruk idag. Vi skal først se på den mye brukte IP protokoll versjon 4, som refereres til som IPv4. vi skal se på IP versjon 6 (IPv6), som er blitt foreslått å erstatte IPv4, mot slutten av seksjonen. 
+
+![Networklayerinside](https://i.imgur.com/QqHjnnt.png)
+
+Vi ser at internettets nettverkslag har tre store komponenter. Den første komponenten er IP-protokollen. Den andre komponeneten er ruter-komponenteen, som bestemmer stien et datagram tar fra kilde til destinasjon. Den siste komponenten av nettverkslaget er et anlegg for å rapportere feil i datagrammer og svare på forespørsler om bestemt nettverkslagsinformasjon. Vi vil dekke internettets nettverkslagrings- og informasjonsrapporteringsprotokoll, ICMP (Internet Control Message Protocol) snart. 
+
+#### Datagram Format
+
+> Husk at en nettverkslagspakke refereres til som et *datagram*. 
+
+![ipv4datagram](https://i.imgur.com/n9yJwFR.png)
+
+IPv4 datagram-formatet er vist i Figur 4.13. Nøkkelfeltene i TPv4-datagrammet er:
+
+* *Version number.* Disse 4 bitene spesifiserer IP-protokoll versjonen til datagrammet. Forskjellige versjoner av IP burker forskjellige datagramformater.
+* *Header length.* Fordi et IPv4-datagram kan inneholde et variabelt antall med options, er disse 4 bitene trengt for å bestemme hvor dataen i datagrammet begynner. 
+* *Type of service.* Type of service (TOS) bits er inkludert i headeren for å la forskjellige typer av IP datagrammer for å tillate forskjellige typer IP-datagrammer (f.eks. datagram som spesifikt krever low delay, high throughput eller reliability) for å skille de fra hverandre. 
+* *Datagram length.* Dette er den totale lengden til et IP-datagram (header pluss data. Dette feltet er 16 bits, og derfor er den teoretiske maks.størrelsen til et IP datagram 65,535 bytes - selvom de sjeldent er større en 1,500 bytes.
+* *Identifier, flafs, fragmentation offset.* Disse tre feltene har med den såkalte IP-fragmentasjonen, noe vi skal se på snart. IPv6 tilatter ikke fragmentering hos ruterne. 
+* *Time-to-live*. Time-to-live-feltet (TTL) er inkludert for å forsikre at datagrammer ikke sirkulerer for alltid pga f.eks. en loop i nettverket. Dersom TTL-feltet er 0, må pakken droppes.
+* *Protocol*. Dette fletet brukes kun når IP-datagrammet kommer frem til destinasjonen. Verdien til dette feltet indikerer hvilken spesifikk transportprotokoll som skal ta hånd om dataen i datagrammet. 
+* *Header checksum.* Header-checksummen hjelper ruterer i å finne bit-feil i et mottat IP-datagram. Header-checksummen er regnet ut ved å behandle alle 16 byte bits ord i headeren som et tall og summe disse tallene sammen deretter å ta 1s komplement. Dersom man finner en feil pleier man å droppe datagrammet. 
+	* Noter at man har slike bit-error-skjekker både på transport og nettverkslaget. Hvorfor vi trenger å skjekke begge steder? Legg merke til at det kun er IP-headeren som blir checksummet ved IP-laget, mens TCP/UDP checksum regnes ut over hele TCP/UDP segmentet. 
+* *Source and destination IP addresses.* Når en kilde lager et datagram legger den til sin IP-adresse, og legger til mottakerens IP-adresse. Ofte bestemmer kilden destinasjonsadressen via en DNS-lookup. 
+* *Options*. Options-feltet lar en IP-header til å bli utvidet. Siden man har opitons-felt vil IP-datagrammer har variabel størrelse, og man må regne ut hvor dataen starter i datagrammet. 
+* *Data (payload)*. Til sist kommer vi til det viktigste feltet, nemlig dataen til datagrammet. Data-feltet til IP-datagrammet inneholder transportlags-segmentet (TCP / UDP) for å bli levert til destinasjonen. Datafeltet kan også holde andre typer data, som en ICMP melding. 
+
+
+> IP-datagrammet har totalt 20 bytes med header (antar ingen options). Dersom et datagram bærer et TCP-segment, da vil hvert datagram bære totalt 40 bytes med header (20 bytes IP-header pluss 20 bytes TCP-header) sammen med applikasjonsmeldingen. 
+
+
+##### IP Datagram Fragmentation
+
+I neste kapittel skal vi se at ikke alle link-layer-protokollen kan bære netverkslagspakker på samme størrelse. Noen protokoller kan bære store datagrammer, andre kan bare ta små. Den maksimale mengden data en **link-layer-frame** kan bre kalles *maximum transmission unit (MTU). På grunn av at hvert IP-datagram er innkapslet i en linklagsramme for transport mellom en ruter til en annen, vil MTY-en til en linklagsprotokoll sette en streng grense på lengden til IP-datagrammet. 
+
+Dersom man mottar et IP-datagram fra en inngående link, og den utgående linken har en mindre MTU enn lengden til IP-datagrammet. Hva gjør man da? 
+
+Løsningen er å fragmentere dataen i IP-datagrammet til to mindre IP-datagram, og innkapsle hver av disse i hver sin linklagsramme. Hvert av disse mindre datagrammene er referert til som et **fragment**. Jobben om å defragmentere datagrammene er satt til å være hos endesystemene og ikkke hos ruterne. For å kunne tillate verten å defragmentere så putter man *identifikasjon flag*, og *fragmentation offset* feltene i IP-datagramheaderen. Når et datagram lages så legger den sendende verten på et identifikasjonsnummer. For å forsikre seg om at alle pakker kommer frem, så vil den siste pakken ha flagget satt til 0, mens de andre har den satt til 1. 
+
+![fragment/defragment](https://i.imgur.com/BrOQmnn.png)
+
+> Dersom en eller flere av fragmentene ikke ankommer til destinasjonen vil det ukomplette fragmentet droppet og ikke sendt til transportlaget. 
+
+
+#### IPv4 Addressing
+
+En vert har typisk en enkel link til nettverket - Når IP i verten ønsker å sende et datagram, gjør den det over denne linken. Grensen mellom verten og den fysiske-linken kalles et **interface**. Grensen mellom en ruter og en av dets linker kalles også et interface - en ruter har dog flere interfacer, et for hver link. 
+
+Ettersom hver vert og ruter er kapable til å sende og motta IP-datagrammer, krever IP at hvert interface hos hver vert og ruter har sin egen IPadresse. En IP-adresse er dermed teknisk assosiert med en interface, istedet for med verten eller ruteren som inneholder interfacet. 
+
+Hver IP-adresse er **32**-bits (4 bytes) lang. Det gir en total på 2<sup>32</sup> mulige IP-adresser (4 milliarder). Disse adressene er typisk skrevet i **dotted-decimal notation**, der hver byte i IP-adressen, i decimal, skilles fra hverandre med et punktum. 
+
+> Adressen *193.32.216.9* i binær notasjon blir 11000001 00100000 11011000 00001001.
+
+
+Hvert interface på hver eneste vert og ruter på internettet må ha en IP-adresse som er globalt unik. Disse adressene kan ikke bli valgt på en tilfeldig måte, men en del av interfacets IP-adresse er bestemt av subnettet som den er koblet på. 
+
+![ipsubnet](https://i.imgur.com/2TaiQ8u.png)
+
+Figur 4.15 over gir et eksempel på IP-adressering og interfacer. I bildet er det en ruter (med tre interfacer) som brukes til å sammenkoble seg med syv verter. Ta en titt på de tre vertene øverst til venstre. De har alle en IP-adresse på formen  *223.1.1.xxx* (som bestemmer de 24 bitene til venstre av IP-adressen). 
+
+De fire interfacene er altså sammenkoblet med hverandre av et nettverk *som ikke har en ruter*. Dette nettverket kan være sammenkoblet av Ethernet LAN. På IP-term, kalles denne typen for nettverk med sammenkoblede vert-interfacer og et ruter-interface for et **subnet** (Et subnet kalles også et *IP-nettverk*). 
+
+IP-adressering tilegner en adresse til dette subnettet: *223.1.1.0/24*, der */24* notasjonen, kalt en **subnet mask**, indikerer at de 24 mest venstre bit-ene av de 32-bitene definerer subnettets adresse. 
+
+
+>To determine the subnets, detach each interface from its host or router, creating islands of isolated networks, with interfaces terminating the end points of the isolated networks. Each of these isolated networks is called a subnet.
+
+
+Internettets adressetildelingsstrategi er kjent som **Classless Interdomain Routing (CIDR)**. CIDR generaliserer begrepet subnet adressering. Som med subnettadressering er 32-biters IP-adresse delt inn i to deler og har igjen den stiplede desimalformen *a.b.c.d / x*, hvor x angir antall biter i den første delen av adressen.
+
+De *x* mest signifikante biter av en adresse på skjemaet *a.b.c.d / x* utgjør nettverksdelen av IP-adressen, og blir ofte referert til som **prefiks** (eller *network prefix*) til adressen.
+
+> Før CIDR ble vedtatt, ble nettverksdelene av en IP-adresse begrenset til å være 8, 16 eller 24 bits i lengden, en adresseringsordning kjent som **classful addressing**, siden subnett med 8-, 16- og 24-biters subnett-adresser ble kjent som henholdsvis klasse A, B og C-nettverk. 
+
+IP-broadcast-adressen 255.255.255.255. Når en vert sender et datagram med destinasjonsadresse 255.255.255.255, blir meldingen levert til alle verter på samme subnett. Rutere videresender eventuelt meldingen til nærliggende subnett også (selv om de vanligvis ikke gjør det).
+
+
+#### Obtaining a Block of Addresses
+
+For å få en *blokk* med IP-adresser for bruk i en organisasjonens subnett, kan en nettverksadministrator først kontakte sin *ISP*, som vil gi adresser fra en større adresseblokk som allerede er blitt tildelt ISP. For eksempel kan Internett-leverandøren selv ha blitt tildelt adresseblokken *200.23.16.0/20*. Internett-leverandøren kan i sin tur for eksempel dele sin adresseblokk inn i åtte like store sammenhengende adresseblokker og gi en av disse adresseblokkene til opptil åtte organisasjoner som støttes av denne Internett-leverandøren, som vist nedenfor. (Vi har understreket delnettdelen av disse adressene for enkelhets skyld.)
+
+![ipblokker](https://i.imgur.com/QtyyOis.png)
+
+##### Obtaining a Host Address: the Dynamic Host Configuration Protocol (DHCP)
+
+Når en organisasjon har fått en blokk med adresser, kan de tildele individuelle IP-adresser til vert- og ruter-interfacer i organisasjonen sin.
+En systemadministrator vil typisk manuelt konfiguere IP-adressene inn i ruteren. 
+
+Vertadressene kan også konfigueres manuelt, denne oppgaven blir ofte gjort med **Dynamic Hot Configuration Protocol (DHCP)**. DHCP tillater en vert å få (tilordnet) en IP-adresse *automatisk*. En nettverksadministrator kan konfigurere DHCP slik at en gitt vert mottar *samme* IP-adresse hver gang den kobles til nettverket, eller en vert kan tilordnes en midlertidig IP-adresse som vil være *forskjellig* hver gang verten kobles til nettverket. I tillegg til vert-IP-adressetildeling tillater DHCP også at en vert lærer tilleggsinformasjon, for eksempel sin nettverksmaske, adressen til sin første hop-router (ofte kalt standard gateway) og adressen til den lokale DNS-serveren.
+
+På grunn av DHCPs evne til å automatisere nettverksrelaterte aspekter ved å koble en vert til et nettverk, blir det ofte referert til som en plug-and-play-protokoll. Denne funksjonen gjør det veldig attraktivt for nettverksadministratoren som på annen måte må utføre disse oppgavene manuelt! 
+
+DCHP er bra i nettverk der det er mange verter som kommer og forlater nettverket ofte.
+
+* DHCP er en klient-server protokoll. En klent er typisk en nyankommen vert som ønsker å få nettverkskonfigureringsinformasjon, som IP-adresse for seg selv. I det enkelste tilfelle har hvert subnett en egen DHCP-server.
+
+Når en ny vert kommer til nettverket og ønsker å koble seg til, skjer det fire steg i DHCP klient-server interaksjonen:
+
+1. *DHCP server discovery.* Klienten sender en **DHCP discover message** med en UDP pakke på port 67, til IP-adresse *255.255.255.255*, og source (klientens) IP-adresse *0.0.0.0*
+2. *DHCP server offer*. Når DHCP-serveren mottar requesten, vil den svare klienten med en **DHCP offer message**, som sendes til *255.255.255.255*, denne sendes til broadcast-adressen pga at det kan være flere DHCP-servere på subnettet. Hvert server offer-melding inneholder en transaksjons IS til det mottate discover-melding, den foreslåtte IP-adressen til klienten, nettverksmasken og en leasingtid for IP-adresser - hvor lang tid IP-adressen vil være gyldig for. 
+3. *DHCP request*. Den nye klienten kan velge mellom en eller flere server-offere og respondere til det valgte tilbudet med en ***DHCP request message**, og ekkoer tilbake konfigurasjonsparametrene fra den forrige meldingen. 
+4. *DHCP ACK*. Serveren respondere til DHCP request message-en med en **DHCP ACK message**, som bekrefter de forespurte parametrene. 
+
+![DHCPinteraksjon](https://i.imgur.com/g6BC57G.png)
+
+
+#### Network Address Translation (NAT)
+
+Vi vet nå at alle IP-kapable enheter trenger en IP-adresse. Dersom man har brukt opp alle IP-adressene i adresseblokken fra ISP-en sin, hvordan skal man da allokere nye adresser? En tilnærming er med **network address translation (NAT)**. 
+
+Figur 4.22 viser driften av en NAT-aktivert ruteren. Den NAT-aktiverte ruteren, bosatt i hjemmet, har et grensesnitt som er en del av hjemmenettverket til høyre i figur 4.22. Adressering i hjemmenettverket er akkurat som vi har sett ovenfor - alle fire grensesnittene i hjemmenettverket har samme subnettadresse på *10.0.0 / 24*. Adresseområdet *10.0.0.0/8* er en av tre deler av IP-adresseplassen som er reservert i for et privat nettverk eller et **rike** med private adresser, for eksempel hjemmenettverket i Figur 4.22. 
+
+> Et rike med private adresser refererer til et nettverk hvis adresser bare har betydning for enheter innenfor det aktuelle nettverket. 
+
+
+For å se hvorfor dette er viktig, bør du vurdere det faktum at det er hundretusenvis av hjemmenettverk, og mange bruker samme adresserom, *10.0.0.0/24*. Enheter innenfor et gitt hjemmenettverk kan sende pakker til hverandre ved hjelp av *10.0.0.0/24* adressering. Imidlertid kan pakker videresendt utover hjemmenettverket til det større globale Internett, tydeligvis ikke bruke disse adressene (som enten en kilde eller en destinasjonsadresse) fordi det er hundrevis av tusenvis av nettverk som bruker denne adresseblokken. 
+
+
+Det vil si at *10.0.0.0/24* adressene bare kan ha betydning innenfor det oppgitte hjemmenettverket. Men hvis private adresser bare har mening innenfor et gitt nettverk, hvordan håndteres adressering når pakkene sendes til eller mottas fra det globale Internett, hvor adressene er nødvendigvis unike? Svaret ligger i å forstå NAT:
+
+
+* Den NAT-aktiverte ruteren ser ikke ut som en ruter for omverdenen. I stedet oppfører NAT-ruteren seg til omverdenen som en enkelt enhet med en enkelt IP-adresse. I Figur 4.22 har all trafikk som forlater hjemme-ruteren for det større Internett en kilde-IP-adresse på *138.76.29.7*, og all trafikk som kommer inn i hjem-ruteren må ha en destinasjonsadresse på *138.76.29.7*. 
+
+* I hovedsak skjuler den NAT-aktiverte ruteren detaljene i hjemmenettverket fra omverdenen. Kanskje du lure på hvor hjemmenettverkene får adressene deres, og hvor ruteren får sin eneste IP-adresse. Ofte er svaret det samme - DHCP! 
+	* Ruteren får adressen fra Internett-leverandørens DHCP-server, og ruteren kjører en DHCP-server for å gi adresser til datamaskiner innenfor NAT-DHCP-ruter-styrte hjemmenettverkets adresseplass.
+
+
+
+Hvis alle datagrammer som kommer til NAT-ruteren fra WAN, har *samme* destinasjons-IP-adresse, hvordan kjenner ruteren den **interne verten** som den skal videresende et gitt datagram?
+
+Trikset er å bruke et **NAT-oversettelsestabell** på NAT-ruteren, og å inkludere *portnumre* samt *IP-adresser* i tabelloppføringene. Når en intern vert sender en pakke sendes det med intern IP-adresse samt et vilkårlig portnummer samt destinasjonsaddresse. Hos ruteren så lagres IP-adressen fra LAN-siden og WAN-siden og det interne portnummeret, samt et vilkårlig kildeportnummer for ruteren. Dette lagres i oversettelsestabellen.
+
+Når datagrammet fra destinasjonsadressen ankommer NAT-ruteren, så vil ruteren indekserer ruteren NAT-oversettelsestabellen ved hjelp av destinasjonens IP-adresse og destinasjonsportnummer for å oppnå riktig IP-adresse (*10.0.0.1*) og destinasjonsportnummer (*3345*). 
+
+> Har vært diskusjon rundt NAT-oversettelse da flere mener at portnummere skal brukes for å adressere prosesser, ikke adressere verter. 
+
+* Problem ved P2P, dersom Vert A ønsker å etablere TCP-tilkobling til Vert B, fungerer ikke dette, da Vert B ikke kan oppføre seg som en server og akseptere TCP-tilkobligner. 
+	* Mulig å unngå dette med **connection reversal / NAT traversal** ved at Vert A, spør Vert B gjennom en Vert C, som ikke er er bak en NAT, om å initiere en TCP-tilkobling direkte tilbake til Vert A. 
+
+
+
+#### UPnP
+
+*NAT-traversal* leveres i økende grad av **Universal Plug and Play** (*UPnP*), som er en protokoll som gjør at en vert kan oppdage og konfigurere et nærliggende NAT. UPnP krever at både verten og NATen er UPnP-kompatible. Med UPnP kan et program som kjører i en vert, be om en NAT-kartlegging mellom dens (private IP-adresse, privat portnummer) og (offentlig IP-adresse, offentlig portnummer) for noen forespurt offentlig portnummer. 
+
+Hvis NAT aksepterer forespørselen og oppretter kartlegging, kan nodene fra utsiden initiere TCP-tilkoblinger til (offentlig IP-adresse, offentlig portnummer). 
+
+Videre lar UPnP programmet vite verdien av (offentlig IP-adresse, offentlig portnummer), slik at søknaden kan annonsere den til omverdenen.
+
+Oppsummert lar UPnP eksterne verter å initiere kommunikasjonsøkter til NAT-ede verter, ved hjelp av enten TCP eller UDP. NAT har lenge vært en *nemesis* for P2P applikasjoner - UPnP, som gir en effektiv og robust NAT-traversal løsning, kan være deres frelser.
+
+
+
+#### Internet Control Message Protocol (ICMP)
+
+ICMP brukes av verter og rutere til å kommunisere nettverkslagsinformasjon til hverandre. Den mest typiske bruken av ICMP er for *feilrapportering*. For eksempel, når du kjører en Telnet-, FTP- eller HTTP-økt, kan det hende du har oppdaget en feilmelding, for eksempel “Destination network unreachable”. 
+
+Denne meldingen hadde sin opprinnelse i ICMP. På et tidspunkt kunne en IP-ruteren ikke finne en vei til verten spesifisert i Telnet-, FTP- eller HTTP-applikasjonen. Denne ruteren skapte og sendte en *type-3* ICMP melding til verten din som angir feilen.
+
+ICMP er ofte ansett som en del av IP, men arkitektonisk ligger den like *over* IP, da ICMP-meldinger er ført inne i IP-datagrammer. Det vil si at ICMP-meldinger blir båret som IP-nyttelast, akkurat som TCP- eller UDP-segmenter blir båret som IP-nyttelast. 
+
+På samme måte, når en vert mottar et IP datagram med ICMP spesifisert som den øverste lagprotokollen, demultiplekse datagrammets innhold til ICMP, akkurat som det ville demultiplekse datagrammets innhold til TCP eller UDP.
+
+
+* ICMP-meldinger har en *type* og et *kodefelt*, og inneholder overskriften og de første 8 byte av IP-datagrammet som forårsaket at ICMP-meldingen genereres i utgangspunktet (slik at avsenderen kan bestemme datagrammet som forårsaket feilen). 
+* Utvalgte ICMP-meldingstyper er vist i Figur 4.23. Merk at ICMP-meldinger ikke bare brukes til signalfeilforhold.
+* Det velkjente pingprogrammet sender en *ICMP type 8 kode 0* melding til den angitte verten. Destinasjonsverten, ser ekkoforespørselen, sender tilbake en *type 0 kode 0 ICMP-ekko-svar*. 
+
+**Traceroute:** Sender ICMP-meldinger i vanlige datagrammer med UDP-segmenter, med usannsynlige UDP portnumre. Det første datagrammet har TTL på 1, neste har 2, tredje har 3, osv. Kilden starter også timeren for hver av datagrammene. Når det *n*-te datagrammet kommer til den *n*-te ruteren, ovserverer den *n*-te ruteren at TTL-en til datagrammet har gått ut, og sender en ICMP-warning melding til verten. Slik kan Traceroute karlegge antall og identiteten til ruterne mellom seg og destinasjonen. 
+
+
+#### IPv6
+
+På 1990 begynte de å se på en etterfølger til IPv4-protokollen - i hovedsak fordi de 32-bit IP-adressene begynte å bli brukt opp. Det ble så utviklet en ny IP protokoll, IPv6. 
+
+
+##### IPv6 Datagram Format
+
+Formatet til IPv6-datagrammet er vist i Figur 4.24 under. De viktigste endringene i IPv6 er tydelige i datagramformatet:
+
+* *Expanded addressing capabilities.* IPv6 øker størrelsen på IP-adresser fra 32 til 128 bits. Dette gør at verden ikke kommer til å gå tom for IP-adresser. Finnes også nå **anyone address**, som lar et datagram å bli levert til enhver av en gruppe av verter.
+* *A streamlined 40-byted header.* Noen IPv4 felt har blitt droppet eller gjort valgfrie. Den resulterende 40-byte fast-lengde headeren tillater raskere prosessering av IP-datagrammet.
+* *Flow labelng and priority.* IPv6 har en unnvikende definisjon av **flow** (*nor. flow*). Dette tillater merking av pakker som tilhører bestemte strømmer som avsenderen ønsker spesiell håndtering for, for eksempel en ikke-standardkvalitet-tjeneste eller sanntids-tjeneste. For eksempel kan lyd og videooverføring sannsynligvis bli behandlet som en strømning. På den annen side kan de mer tradisjonelle applikasjonene, for eksempel filoverføring og e-post, ikke behandles som strømmer.
+
+Følgende felt er definert i IPv6:
+* *Version.* Dette 4-bit-feltet identifiserer IP-versjonsnummeret, IPv6 bærer en verdi av 6 i dette feltet. 
+
+* *Traffic class*. 8-bit felt som er nesten likt TOS-feltet hos IPv4
+
+* *Flow label.* 20-bit felt som identifiserer flow-en til datagrammet.
+
+* *Payload length*. 16-bit verdi som gir antall bytes som følger etter headeren.
+
+* *Next header.* Feltet identifiserer protokollen som datafeltet i datagrammet skal bli levert til (f.eks. UDP eller TCP).
+
+* *Hop limit*. Innholdet i dette feltet blir dekrementert med en hos hver ruter som videresender datagrammet. Dersom hoplimit-en blir 0, vil datagrammet bli kastet.
+
+* *Source and destination addresses.* IPv6-adressene til kilde og destinasjon, to felt på 128-bit. 
+
+* *Data*. Dette er payload-delen av IPv6 datagrammet.
+
+
+Felt som har forsvunnet fra det vi så i IPv4:
+
+* *Fragmentaton/Reassembly*: IPv6 tillater ikke fragmentering eller refragmentering hos mellomliggende rutere, dette kan kun bli gjort hos kilde eller destinasjon. Dersom en pakke kommer til en utgående link som har mindre kapasitet enn størrelsen til datagrammet, blir pakken droppet, og en ICMP-error-melding blir sendt tilbake. 
+* *Header checksum*: I IPv4, måtte checksummen bli regnet ut på nytt for hver ruter, pga den endrende verdien TTL. Dette tok tid, og som med fragmentering, var dette en for dyr operasjon i IPv4. 
+* *Options*. Et options-felt er ikke lenger en del av IP-headeren. Men er ikke borte, kan bruke *next headers*-feltet.
+
+
+##### Overgangen fra IPv4 til IPv6:
+
+*Alternativer:*
+
+* Et alternativ ville være å erklære en flaggdag - en gitt tid og dato da alle Internett-maskiner ville bli slått av og oppgradert fra IPv4 til IPv6. 
+
+* Sannsynligvis den enkleste måten å introdusere IPv6-kompatible noder på, er en **dual-stack**-tilnærming, hvor IPv6-noder også har en fullstendig IPv4-implementering. 
+	* En slik knute, referert til som en IPv6 / IPv4 knutepunkt i RFC 4213, har evnen til å sende og motta både IPv4 og IPv6 datagrammer. Når du samarbeider med en IPv4-node, kan en IPv6 / IPv4-node bruke IPv4 datagrammer. Når du samarbeider med en IPv6-node, kan den snakke IPv6. 
+	* IPv6 / IPv4-noder må ha både IPv6- og IPv4-adresser
+	* Bruke DNS for å bestemme om noder er kompatible med IPv4 eller IPv6. 
+	* *Problem:* Når et IPv6-datagram blir konvertert over til et IPv4-datagram, vil feltene hos IPv6-datagrammet som ikke har noen motpart i IPv4 forsvinne. 
+	
+* Et alternativ til dual stack-tilnærmingen er kjent som **tunneling**. Tunneling kan løse problemet som er nevnt ovenfor. Den grunnleggende ideen bak tunneling er følgende. Anta at to IPv6-noder vil interoperere ved hjelp av IPv6 datagrammer, men er koblet til hverandre med IPv4-rutere. Vi refererer til det settet med IPv4-rutere mellom to IPv6-rutere som en **tunnel**, som illustrert i figur 4.26. Ved tunneling tar IPv6-noden på senderens side av tunnelen hele IPv6 datagrammet og setter det i **data** (payload)-feltet til et IPv4 datagram, og sender det til den andre IPv6-ruteren.
+
+
+![dualstack](https://i.imgur.com/rDI1FAy.png)
+
+![tunnelling](https://i.imgur.com/fAjMYdK.png)
+
+> **En viktig leksjon som vi kan lære av IPv6-opplevelsen er at det er enormt vanskelig å endre protokollene til nettverkslag**
+
+
+#### Brief Introduction to IP Security
+
+Med sikkerhet som en stor bekymring i dag, har Internettforskere flyttet videre til å designe nye protokoller for nettverkslag som gir en rekke sikkerhetstjenester. 
+
+En av disse protokollene er *IPsec*, en av de mest populære sikre nettverkslagprotokollene og også distribuert i Virtual Private Networks (*VPN*). Selv om IPsec og dets kryptografiske underlag er dekket i detalj i kapittel 8, gir vi en kort introduksjon på høyt nivå til IPsec-tjenester i denne delen.
+
+IPsec er designet for å være bakoverkompatibel med IPv4 og IPv6. Spesielt, for å høste fordelene med IPsec, trenger vi ikke å erstatte protokollstabler i alle rutere og verter på Internett. Hvis du for eksempel bruker transportmodusen (en av to IPsec "mode"-ene), hvis to verter vil kommunisere sikkert, må IPsec bare være tilgjengelig i de to vertene. Alle andre rutere og verter kan fortsette å kjøre "vanilla IPv4".
+
+> Vanilla = Straight out of the box
+
+Vi skal nå se på IPsec sin transportmodus. På sendingssiden sender transportlaget et segment til IPsec. IPsec krypterer deretter segmentet, legger til flere sikkerhetsfelt i segmentet, og inkapsulerer den resulterende nyttelasten i et vanlig IP datagram. (Det er faktisk litt mer komplisert enn dette, som vi ser i kapittel 8.) Senderverten sender deretter datagrammet til Internett, som overfører det til mottakerverten. Der, dekrypterer IPsec segmentet og sender det ukrypterte segmentet til transportlaget.
+
+
+Tjenestene som tilbys av en IPsec-økt inkluderer:
+
+* *Cryptographic agreement.* Kommuniserende verter kan bli enige om crypto-algoritmer og nøkler
+* *Encrypting of IP datagram payloads*. IPsex krypterer payloaden til datagrammet. 
+* *Data intergrity*. IPsex tillater mottakende vert å verifisere at datagrammet ikke har blitt modifisert.
+* *Origin authentication*. Mottakende vert kan være sikker på at kilde IP-adressen i datagrammet er den faktiske kilden til datagrammet.
+
+
+ 
+ <a name="kap5"></a>
+## Kapittel 5 - The Link Layer: Links, Access Networks, and LANs
+
+
+
 
