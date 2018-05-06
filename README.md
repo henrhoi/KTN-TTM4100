@@ -2157,6 +2157,638 @@ Tjenestene som tilbys av en IPsec-økt inkluderer:
  <a name="kap5"></a>
 ## Kapittel 5 - The Link Layer: Links, Access Networks, and LANs
 
+### Introduction to the Link Layer
+
+Når vi skal diskutere linklaget, skal vi se at det to fundamentale forskjellige typer med linklagskanaler. Den første typen er *broadcast channels*, som kobler sammen verter i trådløse LANs, satelittnettverk og hybrid fiber-coaxial cable (HFC) aksessnettverk. Den andre typen av linklags-channels er punkt-til-punkt kommunikasjonslinker, som gjerne finnes mellom to rutere koblet på en langdistansekobling. 
+
+I dette kapittelet vil jeg referere til enhver enhet som kjører en linklags-protokoll (layer 2) som en **node**. Noder inkluderer verter, rutere, svitsjer og WiFi-aksesspunkter. Jeg vil referere kommunikasjonskanaler som som sammenkobler to nabonoder lags en kommunisjonssti som en **kobling (eng. link)**
+
+Se på eksempelet under i Figur 5.1, tenk at et datagram blir sendt fra den ene trådløse verten til en av serverene. Datagrammet vil da gå igjennom seks koblinger: en WiFi-link mellom den sendende verten og WiFi-aksesspunktet, en Ethernet-link mellom aksesspunktet og linklags-switchen, en link mellom linklags-switchen og ruteren, en link mellom de to ruterne, en Ethernet-link mellom ruter og linklags-switch, og til slutt en Ethernet-link mellom svitjsen og serveren. 
+
+> Over en gitt link / kobling vil den overførende noden innkapse datagrappet i en **linklagsframe**, og sender **framen** inn i linken. 
+
+
+![linklagseksempel](https://i.imgur.com/76sgHbB.png)
+
+
+#### The Services Provided by the Link Layer
+
+Mulige tjenester som kan bli tilbudt av linklagsprotokoller inkluderer:
+
+* *Framing.* Nesten alle linklagsprotokoller innkapsler hver nettverklags-datagram inn i en linklagsframe før overføring over en link. En frame består av et datafelt, der datagrammet blir innsatt, og et antall header-felt.
+
+* *Link access*. En medium access control (MAC) protocol angir reglene for en frame som skal bli overført på linken. For punkt-til-punkt-linker som kun har en sender på den ene enden av linken og en enkelt mottaker på den andre siden av linken, er MAC protokollen enkel - senderen kan sende en frame når linken ikke er opptatt. 
+
+* *Reliable delivery*. Når en linklagsprotokoll tilbyr pålitelig leveringstjeneste, garanterer den å bevege hvert nettverksdatagram over linken uten feil. På samme måte som transportlags pålitelig leveringstjeneste, en linklags pålitelig leveringstjeneste kan bli oppnådd med acknowledgements og re-sendinger. En pålitelig leveringstjeneste for koblinger er ofte brukt for koblinger som er utsatt for høye feilrater, for eksempel en trådløs kobling. Rdt på linklagsprotokoller er ansett å være en unødvendig overhead, og derfor er det mange kablede-protokoller som ikk tilbyr pålitelig leveringstjeneste.
+
+* *Error detection and correction.* Linklagsmaskinvaren i en mottakede kan  feilaktig bestemme at en bit i en ramme er null når den ble overført som en, og omvendt. Slike bitfeil innføres ved signaldemping og elektromagnetisk støy. Fordi det ikke er behov for å videresende et datagram som har en feil, gir mange linklagsprotokoller en mekanisme for å oppdage slike bitfeil.
+
+
+#### Where Is the Link Layer Implemented
+
+For det meste, er linklaget implementert i en **nettverksadapter (eng. network adapter)**, også kjent som et **network interface card (NIC)**. I hjertet nettverksadapteren er linklagskontrolleren , vanligvis en enkel, spesial-tilfelle chip som implementerer mange av linklagstjenestene (framing, link access, error detection, m.m.). Dermed er mye av en linklagets kontrollerfunksjonalitet implementert i maskinvare.
+
+Figur 5.2 viser en typisk vertarkitektur:
+
+![vertarkitektur](https://i.imgur.com/3Qfv31t.png)
+
+
+* På den sendende siden tar kontrolleren et datagram som har blitt laget og lagret i vertens minne av høyere lag i protokollstakken, innkapsler datagrammet i en linklagsframe, og snder framen inn i kommunikasjonskoblingen, etter link-access-protokollen. 
+* På den mottakende siden, en kontreller mottar en hel frame, ekstraherer nettverklags-datagrammet. 
+
+> Dersom linklaget utfører feildeteksjon, er det sendekontrolleren som setter *feildetekteringsbitene* i frame-koden, og det er mottakskontrollen som utfører *feilsøking*.
+
+Som bilde over viser, så ser vi at mesteparten av linklaget er implementert i maskinvare, men ogs at deler av linklaget er implementer i programvare som kjører på vertens CPU. 
+
+> Dette er stedet i protokollstakken hvor programvare møter maskinvare
+
+### Error-Detection and -Correction Techniques
+
+I forrige avsnitt, noterte vi at **bit-level error detection og correction** - finne og rette på korrupte bits i linklagsframe-er sendt mellom to nabonoder - er to tjenester som leveres av linklaget. 
+
+Figur 5.3 illustrerer innstillingen for studien vår. Ved sendingskoden blir data, *D*, som skal beskyttes mot bitfeil, forsterket med feildetekterings- og korrigeringsbits (*EDC* - Error Detection Correction). Vanligvis inkluderer dataene som skal beskyttes, ikke bare datagrammet som sendes ned fra nettverkslaget for overføring over lenken, men også adresseringsinformasjon, sekvensnumre og andre felt i koblingsrammeoverskriften. 
+
+Både D og EDC sendes til mottakskoden i et link-nivå ramme. Ved mottakskoden mottas en sekvens av biter, *D'* og *EDC'*. Vær oppmerksom på at *D'* og *EDC'* kan avvike fra den opprinnelige *D* og *EDC* som et resultat av i-overføring-bitflips.
+
+Mottakerends oppgave blir da å skjekke om *D'* er den samme som originalen *D*. 
+
+![EDC](https://i.imgur.com/d06uIjt.png)
+
+> Selv med bruken av feildeteksjonbits (EDC) kan det fortsatt være **uoppdagede bit-feil**
+
+
+Vi skal nå se på tre teknikker for å finne feil i overført data - paritetssjekker (illustrere basisideén bak feildeteksjon og korreksjon), checksumming metoder (brukes typisk mer i transportlaget) og cyclic redundancy checks (CRC - som typisk brukes i linklaget, i en adapter).
+
+
+#### Parity Checks
+
+Den enkelste formen for feildeteksjon er å bruke en enkelt **paritetsbit**. Anta at dataen, *D*, som ble sendt i Figur 5.4, har *d* bits. 
+
+I en *partalls-paritetsskjema*, vil *senderen* inkludere en ekstra bit og velger den verdi slik at antallet *1*-ere i de *d* + 1 bitene (data + paritetsbit) er partall. For oddetalls-paritetskjemaer, er paritetsbiten bestem slik at det er oddetall antall 1-ere. 
+
+*Mottakeren* må kun telle antall *1*-ere i de mottate *d* + 1 bitene. dersom det er odde antall 1-ere er funnet i et partalls-paritetskjema, vet mottakeren at minst en bit-feil har funnet sted (eller mer presist, et *odde* antall bitfeil). 
+
+![parity1](https://i.imgur.com/C4iXlWh.png)
+
+
+Dersom man antar at det veldig lav sannsynelighet for bit-feil og at dersom ett finner sted er det lite sannsynelig at et annet også finner sted i samme datagram, er en-bit-paritetskjekker nok. Dersom dette ikke er tilfelle må man bruke **to-dimensjonal paritetskjemaer**. Her blir de *d* bitene i *D* delt inn i *i* rader og *j* kolonner. En paritetsverdi er regnet ut for hver rad og for hver kolonne. Dette resulterer i *j + i + 1* paritetsbits utgjør linklagsrammens feil-deteksjonsbits. Med rader og kolonner så kan mottaker ikke bare finne ut at det har skjedd en bitfeil, men også bruke rad- og kolonnenummeret for å *rette opp* bitfeilen. 
+
+> To-dimensjonal paritet kan også *finne* enhver kombinasjon av to feil, men ikke *rette* de. 
+
+![parity2](https://i.imgur.com/uJdI74y.png)
+
+* Mottakerens evne til *både* å detektere og rette feil er kjent som **forward error correction (FEC)**
+
+#### Checksumming Methods
+
+I checksum-metoder, blir de *d* bitene med data i Figur 5.4 behandlet som en sekvens av *k*-bit tall. En enkel checksum-meotde er å enkelt summere disse *k* -bit tallene og bruke denne resulterende summen som feildeteksjonbitsene. 
+
+* **Internet checksum-en** er basert på denne metoden - bytes med data er behandlet som 16-bit tall, og summert. 1s komplementet av denne summen former Internettets checksum og blir bært i segmentets header. Som diskutert i Kap. 3 skjekker mottakeren checksummen ved å ta 1s komplemtet av summen av den mottatte dataen (inkludert checksum-en), og skjekker om alle bitsene i resultatet er *1*. Dersom en av bitsene er *0* indikerer det feil. 
+
+* I TCP og UDP protokollene, er Internett checksum-en regnet ut over alle felt (header og data)
+* I IP er checksummen utregnet kun over IP-headeren (Siden UDP- eller TCP-segmentet har sin egen checksum)
+
+Checksumming krever relativt lite pakke overhead. For eksempel krever checksummene i TCP og UDP kun 16 bits. Imidlertid gir de relativt svak beskyttelse mot feil sammenlignet med *cyclic redundancy check*, som diskuteres nedenfor, og som ofte brukes i linklaget.
+
+#### Cyclic Redundancy Check (CRC)
+
+En feildeteksjonsteknikk brukt over hele dagens datamaskin nettverk er basert på **cyclic redundancy check (CRC) codes**. CRC koedr er også kjent som **polynomial codes**, siden det er mulig å se bitstrengen som skal sendes som et polynom, der koeffisienter er 0- og 1-verdiene i bitstrengen, med operasjoner på bitstrengen tolket som polynom aritmetikk.
+
+CRC koder opererer som følgende. Vi har den *d*-bit biten med data, *D*, som skal sendes mellom to noder. Senderen og mottakeren må først bli enige om et *r + 1* bit mønster, kjet som en **generator**, som blir betegnet som *G*g. Vi krever dog at det mest signifikante (mest venstre) biten i *G* er *1*. 
+
+Nøkkelideen bak CRC koder er vist i Figur 5.6. For et gitt stykke data, *D*, vil senderen velge *r* tilleggsbits, *R*, og legge dem til *D* slik at det resulterende *d + r* bitmønsteret (binært tall) er nøyaktig delelig med *G* (det vil si ingen rest) ved bruk av modulo-2 aritmetisk.
+
+Feilsøkingsprosessen med CRC er så enkel: 
+
+* Mottakeren deler de mottatte bitene *d + r* med *G*. Hvis resten er *ikke-null*, vet mottakeren at en *feil* har oppstått; ellers blir dataene akseptert som *riktige*.
+
+
+Alle CRC-kalkuleringer er gjort i modulo-2 aritmetikk uten carries i addisjon eller lån i subtraksjon. Dette betyr at addisjon og subtrasjon er identiske, og begge er ekvivalente med *bitwise exclusive-or (XOR) operanden)
+
+![crc](https://i.imgur.com/cpYbMv5.png)
+
+> Internasjonale standarder har blitt definert for 8-, 12-, 16-, og 32-bit generatorer, *G*
+
+![crc2](https://i.imgur.com/TdE2Js7.png)
+
+![crc3](https://i.imgur.com/D17NlrK.png)
+
+
+
+### Multiple Access Links and Protocols
+
+Fra introduksjonen husker vi t det finnes to typer nettverkskoblinger: **point-to-poin link** - en sendernode og en mottakernode, og **broadcast link** - flere sendende noder og flere mottakende, hver sendte pakke blir sendt til alle noder. 
+
+Vi skal se på et problem som er sentralt i linklaget: hvordan koordinere aksessen til flere sendende og mottakende noder. i en delt broadcast channel 
+
+> Broadcast-channels er ofte brukt i LAns, nettverk som er geografisk konsentrent i en bygning, universitet eller lignende. 
+
+For at flere noder skal kunne snakke sammen må man ha visse protokoller, og disse er bestemt av såkalte **multiple access protocols**. 
+
+Ettersom alle noder er kapable for å sende frames, kan flere enn to noder sende frames samtidigt. Når dette skjer, vil alle nodene motta flere frames samtidig - de sendte rammene vil da **kollidere** hos alle mottakerne. Typisk når det er en kollisjon skjer, kan ingen av de mottakende nodene få noe ut av de kolliderte rammene. 
+
+For å sikre at kringkastingskanalen utfører nyttig arbeid når flere noder er aktive, er det nødvendig å koordinere overføringen av de aktive nodene på en eller annen måte. Denne koordineringsjobben er ansvaret for tilgangsprotokollen.
+
+![vmac](https://i.imgur.com/7BC5X5w.png)
+
+Vi klassifiserer *multiple access protocol*-er i tre categorier: **channel partitioning protocols**, **random access protocols**, og **taking-turns protocols**. 
+
+Vi kan konkludere at en multiple access protocol for en broadcast channel med rate *R* bits per sekund, burde ha følgende ønskede egenskaper:
+
+1. Når en node har data å sende, har den noden en overgangshastighet på *R* bps.
+2. Når *M* noder har data som skal sendes, har hver av disse node en gjennomstrømning på *R* / *M* bps. Dette trenger nødvendigvis ikke å være at hver av de M nodene alltid har en øyeblikkelig hastighet på *R* / *M*, men heller at hver node skulle ha en gjennomsnittlig overføringshastighet på *R* / *M* over noe passende definert intervall
+av tiden.
+3. Protokollen er desentralisert, dvs. det er ingen masternode som representerer et enkelt feilpunkt for nettverket. 
+4. Protokollen er enkel, så den er billig å implementere. 
+
+
+#### Channel Partitioning Protocols
+
+Minner om fra Kap. 1 at **time-division multiplexing (TDM)** og **frequency-division multiplexing (FDM)** er to teknikker som brukes for å partisjonere en broadcast channels båndbredde blant alle noder som bruker kanalen. 
+
+Anta at en **kanal** (*eng. channels*) støtter *N* noder og at overføringsraten til kanalen er *R* bps. TDM deler tid inn i **time frames** (*nor. tidsramme*) og deler hver tidsramme inn i *N* **time slots** (*nor. tidsluker*). 
+
+Når en node har en linklagsframe å sende, så overfører den framens bits under en tildelt tidsluke i den roterende TDM-rammen. Typisk er tidsluke-størrelsene bestemt slik at en enkelt pakke kan bli ovrført under en tidsluke. 
+
+Figur 5.9 under viser en enkel fire-noders TDM-eksempel. Er som en samtale som går i sirkel, der hver person får prate i en gitt tid, så den neste personen, når alle personene har fått snakket, så begynner mønsteret på nytt. 
+
+* TDM er tiltrekkende fordi det eliminerer kollisjoner og er helt fair. Alle nodene får dedikert en overføringsrate *R*/*N* bps under hver tidsramme.
+	* Likevel er det noen negative sider: Hver node er begrenset av en øvre gjennomsnittlig overføringsrate på *R*/*N* bps, selv når det kun er en node som vil sende pakker, og hver node er nødt til å vente på sin tur.
+
+	
+Mens TDM deler inn broadcast channelen i tid, deler *FDM*  *R*bps-kanalen i forskjellige frekvenser (hver med en båndbredde på *R*/*N*) og tilordner hver frekvens til en av *N* nodene. FDM skaper dermed *N* mindre kanaler med *R* / *N* bps ut av den enkle, større *R* bps-kanalen. FDM deler både fordelene og ulempene til TDM. Det unngår kollisjoner og deler båndbredden ganske mellom de *N* nodene. Imidlertid har FDM også en viktig ulempe som med TDM - en node er begrenset til en båndbredde på *R* / *N*, selv når det er den eneste noden med pakker som skal sendes.
+
+![TDM](https://i.imgur.com/d4ev0Fl.png)
+
+En tredje kanalpartisjoneringsprotokoll er **code division multiple access (CDMA)**. Mens TDM og FDM tildeler tidsluker og frekvenser til henholdsvis nodene, tilordner CDMA en forskjellig kode til hver node. Hver node bruker deretter sin unike kode for å kode de databitene den sender. Hvis kodene er valgt nøye, har CDMA-nettverk den fantastiske egenskapen at forskjellige noder kan overføre samtidig, og likevel har de respektive mottakere riktig mottatt avsenderens kodede databit (forutsatt at mottakeren vet avsenderens kode) til tross for forstyrrende overføringer av andre noder.
+
+
+#### Random Access Protocols
+ 
+Den andre klassen av multiple access protokoller er **random access protokoller**. I en random access-protocol overfører en overføringsnode alltid ved full hastighet av kanalen, nemlig *R* bps. Når det er en kollisjon, sender hver node involvert i kollisjonen gjentatte ganger sin ramme (det vil si pakke) til rammen kommer gjennom uten kollisjon. Men når en node opplever en kollisjon, sender den ikke nødvendigvis straks rammen tilbake. I stedet venter det en *tilfeldig* forsinkelse før re-sending av rammen.
+
+
+Hver node involvert i en kollisjon velger uavhengige tilfeldige forsinkelser. Fordi tilfeldige forsinkelser er valgt uavhengig, er det mulig at en av nodene vil velge en forsinkelse som er tilstrekkelig mindre enn forsinkelsene til de andre kolliderende nodene, og vil derfor kunne snike sin ramme inn i kanalen uten kollisjon.
+
+Det finnes dusinvis av tilfeldige tilgangsprotokoller som er beskrevet i litteraturen. I denne delen beskriver vi noen av de mest brukte random access-protokollene - *ALOHA*-protokollene og *CSMA*-protokollene (carrier sense multiple access). Ethernet er en populær og distribuert CSMA-protokoll.
+
+
+##### Slotted ALOHA
+
+I beskrivelsen av slotted ALOHA, antar vi følgende:
+
+* Alle linklagsrammer består av nøyaktig *L* bits. 
+* Tiden er delt inn i luker av *L*/*R* sekunder - atlså tiden det tar å overfør en ramme.
+* Noder starter å overføre rammen kun i begynnelsen av en luke.
+* Nodene er synkroniserte slik at hver node ved når luken begynner.
+* Dersom to eller flere rammer kolliderer i en luke, da vil alle nodene detektere kollisjonen før luken ender. 
+
+
+La *p* være en sannsynlighet (*eng. propability*), altså et tall mellom 0 og 1. Operasjonen til slotted ALOHA ved hver node er enkel:
+
+* Når en node har en ny ramme å sende, venter den til begynnelsen av neste luke og overfører hele rammen i luken. 
+* Dersom det ikke er en kollisjon har noden suksessfult overført rammen, og den trenger ikke å tenke på å re-sende rammen. (Noden kan nå forberede en ny ramme for overføring, hvis den har det)
+* Dersom de er en kollisjon, detekterer noden kollisjonen før luken er ferdig. Da vil noden re-sende rammen i den etterfølgende luken med en sannsynlighet *p*, helt til rammen er sendt uten en kollisjon
+
+
+> Sannsyneligheten for at pakken blir re-sendt er *p*, og da er implisitt sannsyneligheten for at den ikke blir sendt (1 - *p*) 
+
+Slotted ALOHA ser ut til å ha mange fordeler. I motsetning til channel partitioning, tillater slotted ALOHA en node å sende kontinuerlig med full hastighet, R, når noden er den eneste aktive noden. (En node sies å være aktiv hvis den har rammer for å sende.) 
+
+Slotted ALOHA er også svært *desentralisert*, fordi hver node oppdager kollisjoner og bestemmer seg selv når den skal sendes om igjen. (Slotted ALOHA krever imidlertid at lukene skal synkroniseres i nodene, om kort vi skal diskutere en unslotted versjon av ALOHA-protokollen, så vel som CSMA-protokoller, ingen av dem krever slik synkronisering.) Slått ALOHA er også en ekstrem enkel protokoll.
+
+* En luke der nøyaktig én node overfører, sies å være en **vellykket luke**. **Effektiviteten** til en slotted multiple access protokoll er definert til å være den langsiktige brøkdelen av vellykkede luker i tilfellet når det er et stort antall aktive noder, som hver har et stort antall rammer å sende.
+
+
+![alohada](https://i.imgur.com/snz6Nl5.png)
+
+* Sannsynligheten for at en gitt node har en suksess er *p(1 - p)*<sup>*N-1*</sup>
+
+* Fordi det er *N* noder, er sannsynligheten for at noen av *N* noder har en suksess *Np(1 - p)*<sup>*N-1*</sup>. 
+
+* Med litt utregning får man at den effektive overføringsraten til kanalen ikke er *R* bps, men kun 0.37 · *R* bps (Det er kun 37%)
+
+
+#### ALOHA
+
+Slotted ALOHA protokollen krever at alle noder synkroniserer overføringene deres til å starte på begynnelsen av hver luke. Den første ALOHA-protokollen var faktisk en uslotted, fullstendig desentralisert protokoll. I ren ALOHA, når en ramme først ankommer (det vil si at et nettverkslagsdatagram sendes ned fra nettverkslaget ved sendingsnoden), overfører noden straks rammen i sin helhet inn i kringkastingskanalen (*eng broadcast channel*). Hvis en overført ramme opplever en kollisjon med en eller flere andre sendinger, vil noden så umiddelbart (etter fullstendig sending av sin kolliderte ramme) sende rammen tilbake med sannsynligheten *p*. Ellers venter noden for en rammeoverføringstid. Etter denne venturen overfører den deretter rammen med sannsynligheten *p*, eller venter (gjenværende tomgang) for en annen rammetid med sannsynlighet (1 - *p*).
+
+* Sannsyneligheten for at ingen andre noder sender i intervallet når sendingsnoden sender er *(1 - p)*<sup>*N-1*</sup>
+
+* Sannsyneligheten for en suksessfull overføring (og at ingen andre sender i nodens sendeintervall) blir da *p(1 - p)*<sup>*2(N-1)*</sup>.
+
+* Dette gir en maksimum effiktivitet på un 1/(2*e*), som nøyaktig er halvparten av max. effekten til slotted ALOHA. Det er prisen å betale for en fullt desentralisert ALOHA protokoll.
+
+
+#### Carrier Sense Multiple Access (CSMA)
+
+I både slotted og ren ALOHA blir en nodes beslutning om å overføre uavhengig av aktiviteten til de andre noder som er festet til kringkastingskanalen. Spesielt legger ikke en node merke tl om andre noder holder på å overføre når den begynner å overføre, eller stopper å overføre når en annen node begynner å blande seg med overføringen. 
+
+Som mennesker har vi menneskelige protokoller som tillater oss ikke bare å oppføre seg med mer sårbarhet, men også å redusere mengden tid som "kolliderer" med hverandre i samtale og dermed øke mengden data vi bytter i samtalene våre . Spesielt er det to viktige regler for høflig menneskelig samtale:
+
+* *Listen before speaking*. Dersom noen snakker, venter man til de er ferdige. I nettverksverdenen kaller vi dette **carrier sensing** - en node hører på kanalen før den overfører. Dersom en ramme fra en annen node er i ferd med å bli overført inn i kanalen venter den til er et lite mellomrom uten overføringer. 
+* *If someone else begins talking at the same time, stop talking.* I nettverksverdenen kaller vi dette **collision detection** - en overførende node hører på kanalen når den overfører. Dersom den merker at en annen node overfører en konflikt-ramme, stopper noden overføringen og venter en tilfeldig stund før den begynner å denne *sense-and-transmit-when-idle sykelen*. 
+
+
+Disse to reglene er kjennetegnet i familien til **carrier sense multiple access (CSMA)** og **CSMA med kollisjonsdeteksjon (CSMA / CD)** protokoller.
+
+Ettersom alle noder utfører carrier-sensing, vil det forekomme kollisjoner? Svaret på dette kan bli illustrert i et space-time diagram. 
+Figur 5.12 viser et space-time diagram med fire noder (A, B, C, D) koblet til en broadcast bus. Den horisontale aksen representerer posisjonen til hver node i rommet, den vertikale aksen representerer tiden. 
+
+![csmacollison](https://i.imgur.com/cQef5Xu.png)
+
+* Ved tid *t<sub>0</sub>*, merker node B at kanalaen kjører på tomgang, og at ingen andre noder overfører. Node B begynner å overføre, med bits som forplanter seg begge veier i broadcastmediumet. 
+
+* Den nedgående forplantningen av B's bits i figur 5.12 med økende tid indikerer at en ikke-null tid er nødvendig for at B bits faktisk propagerer (om enn i nærheten av lysets hastighet) langs broadcastmediet.
+
+* På tidspunktet *t<sub>1</sub>* (*t<sub>1</sub>* > *t<sub>0</sub>*,) har noden D en ramme som skal sendes. Selv om node *B* for tiden overfører ved tid *t<sub>1</sub>*, har ikke bitene som overføres av B ennå ikke kommet til D, og ​​dermed registrerer D at *kanalen er tom* ved *t<sub>1</sub>*. 
+
+* I samsvar med CSMA-protokollen begynner D derfor å sende sin ramme. Kort tid senere begynner Bs overføring å forstyrre Ds overføring ved D. Fra figur 5.12 er det tydelig at ende-til-ende **kanalforplantningsforsinkelsen** til en kringkastingskanal - tiden det tar for et signal å forplante seg fra en av nodene til en annen - vil spille en viktig rolle når det gjelder å bestemme ytelsen. 
+
+Jo lengre denne forplantningsforsinkelsen, desto større sjanse for at en carrier-sensing node ikke er i stand til å fornemme en overføring som allerede har begynt på en annen node i nettverket.
+
+#####Carrier Sense Multiple Access with Collison Detection (CSMA/CD)
+
+I Figur 5.12, er det ingen av noedene osm utfører kollisjonsdeteksjon (CD), både B og D fortsetter å overføre rammene sine, selv om en kollisjon har skjedd. 
+
+Når en node utfører kollisjonsdeteksjon, stopper den overføringen så snart den oppdager en kollisjon. Figur 5.13 viser det samme scenariet som i Figur 5.12, bortsett fra at de to noderne avbryter overføringen kort tid etter detektering av en kollisjon. 
+
+> Det er klart at å legge til kollisjonsdeteksjon i en protokoll hjelper protokollutførelsen ved ikke å overføre en ubrukelig, skadet ramme.
+
+
+Før vi analyserer CSMA / CD-protokollen, la oss nå oppsummere operasjonen fra perspektivet til en adapter (i en knutepunkt) knyttet til en kringkastingskanal:
+
+1. Adapteren får et datagram fra nettverkslaget, forbereder en linklagsramme, og setter rammen i adapterbufferen.
+2. Hvis adapteren registrerer at kanalen er ledig (ingen signal-energi), begynner den å overføre rammen. Hvis adapteren derimot oppdager at kanalen er opptatt, venter den til den er ledig og begynner deretter å overføre rammen.
+3. Under overføringen overvåker adapteren for tilstedeværelse av signalenergi som kommer fra andre adaptere ved hjelp av broadcastkanalen.
+4. Hvis adapteren sender hele rammen uten å detektere signal energi fra andre adaptere, er adapteren ferdig med rammen. Hvis adapteren derimot oppdager signal energi fra andre adaptere mens den overføres, avbryter den overføringen (det vil si at den slutter å sende sin ramme).
+5. Etter avbrudd venter adapteren en tilfeldig tid og går deretter tilbake til trinn 2.
+
+
+![csmacd](https://i.imgur.com/sMVsdfS.png)
+
+
+For å forhindre at kolliderende rammen, kolliderer flere ganger etterhverandre brukes den **binary exponential backoff* algoritme, som gjør at en ramme som har opplevd *n* kollisjoner velger en verdi av K fra {0,1,.., 2<sup>n</sup>-1}. 
+
+![efficiency](https://i.imgur.com/SXdDuHY.png)
+
+
+
+#### Taking-Turns Protocols
+
+Husk at to ønskelige egenskaper til en tilgangsprotokoll er (1) når bare en node er aktiv, har den aktive noden en gjennomstrømning på R bps, og (2) når M-noder er aktive, har hver aktiv knute en gjennomstrømning på nesten R / M bps. AlOHA- og CSMA-protokollene har denne første egenskapen, men ikke den andre. 
+
+Dette har motivert forskere til å skape en annen klasse protokoller - **taking turns protocols**. Som med random access protokoller er det dusinvis av taking-turnsprotokoller. Vi diskuterer to av de viktigste protokollene her. 
+
+* Den første er **polling protocol**. Pollingprotokollen (*nor. spørreprotokollen*) krever at en av nodenee skal betegnes som en hovednode. Masternoden spør hver av knutepunktene i en rundgang, først node 1, så node 2 osv. Masternoden sender først en melding til node 1 og sier at den (node ​​1) kan sende opp til et maksimum antall rammer. Etter at noden 1 sender noen rammer, forteller hovednoden node 2 at den kan sende opp til maksimalt antall rammer. (Hovednoden kan bestemme når en node er ferdig med å sende sine rammer ved å observere mangelen på et signal på kanalen.) Prosedyren fortsetter på denne måten, idet hovednoden *poller* hver node på en syklisk måte.
+	*  Eliminerer kollisjoner og tomme slots, som har vært et problem hos random access protokollene. Gir også *høyere effektivitet.* Men den introduserer en *polling delay*. 
+	*  Problemer: Dersom kun en node aktiv, må den spørre alle de andre nodene mellom hver gang den aktive noden har sendt maksimum antall frames. Polling delay - tiden det tar å sende en melding til en node. Dersom masternoden feiler, vil hele kanalen være ubrukelig. 
+
+	
+* Den andre taking-turns protokollen er **token-passing protocol**. I denne protokollen er det ingen master node. En mindre, spesial-ramme, kalt en **token** blir forvekslet mellom nodene i et bestemt mønster (f.eks. syklisk). Når en node mottar en token, beholder den tokenen kun dersom den har en ramme å sende, hvis ikke sender den noden umiddelbart videre til neste node. Dersom den vil sende beholder den tokenen, sender maksimalt antall med rammer, og sender tokenen videre. 
+	* Dersom en node kræsjer, kan hele kanalen kræsje. 
+
+	
+#### DOCSIS: The Link-Layer Protocol for Cable Internet Access
+
+I de tre foregående delene har vi lært om tre klasser med flere accessprotokoller: *channel-partitioning* protokoller, *random access* protokoller, and *taking-turns* protokoller. Et kabelnettverk vil gjøre det til en utmerket case-studie her, da vi finner aspekter av hver av disse tre klassene med flere tilgangsprotokoller med kabelaksessnettet! 
+
+Husk fra Kap. 1 at et kabelaksessnettverk typisk kobler sammen flere tusen boligkabelmodemer til et kabelmodemtermineringsystem (CMTS) hos kabelnettverkhodeenden. **The Data-Over-Cable Service Interface Specifications (DOCSIS)** spesifiserer kabeldata nettverksartitekturen og dets protokoller. DOCSIS bruker FDM for å dele nedstrøms (CMTS til modem) og oppstrøm (modem til CMTS) nettverksegmenter inn i flere frekvenskanaler. Hver oppstrøms- og nedstrømskanal er en broadcastkanal. 
+
+* Rammer sendt fra CMTS langs nedstrømskanalen går til alle modemene, men ettersom det kun er en enkel CMTS som sender langs broadcastkanalen er det *ingen multiple access problem*.
+* Rammer sendt oppstrøms fra modemene, er mer interresant da det er flere kabelmodemer (sendere) og en mottaker langs oppstrømskanalen, og kollisjoner kan potentielt oppstå. 
+
+Som illustrert i Figur 5.14, er hver oppstrømskanal delt opp i intervaller i tid (TDM-ish) bestående av en sekvens mini-luker, som kabelmodemene kan sende til CMTS-en. Hvem som skal sende bestemmer CMTS-en ved å sende en sålkalt MAP-melding langs nedstrømskanalen for å spesifisere hvilket kabelmodem som skal få sende i hvilken mini-luke, for intervallet spesifisert i meldingen. 
+
+* Hvordan vet CMTS-en hvilke modemer som har data å sende i utgangspunktet. Dette er løst ved at kabelmodemene sender mini-luke-request-frames til CMTS.-en. 
+* Et kabelmodem kan verken merke at oppstrømskanalen er opptatt eller detektere en eventuell kollisjon. Men den merker kollisjonen dersom den ikke får en bekreftelse for rammen i neste nedstrømskontrollmelding. 
+* Når en kollisjon oppstår bruker modemet binær eksponentiell backoff. 
+
+
+Et kabeltilkoblingsnettverk tjener som et fantastisk eksempel på flere tilgangsprogramer i action - *FDM*, *TDM*, random access, og sentralt allokerte tidsluker innenfor et nettverk. 
+
+
+
+### Switched Local Area Networks
+
+Etter å ha dekket broadcast-ettverk og multiaksessprotokoller, skal vi nå se på swithed-lokalnettverk. Figur 5.15 viser et switched-lokalnettverk som kobler sammen tre avdelinger, to servere og en ruter med 4 svitsjer. Ettersom disse svitsjene operererer på linklaget, svitsjer de linklagsrammer, og ser ikke på nettverksadresser (IP-adresser), og bruker heller ikke routing-algoirmer for å bestemme stien. Istedet for å bruke IP-adresser bruker de heller link-lagsadresser, som vi skal se på nå.
+
+
+#### Link-Layer Addressing and ARP
+
+Verter og rutere har linklagsadresser. Men hvorfor trenger verter og rutere både linklags- og nettverklagsadresser? Vi skal se syntaksen og funksjonen til linklagsadresser, og se hvorfor begge er viktige. Vi skal også se på *Address Resolution Protocol (ARP)*, som kan oversette IP-adresser til linklagsadresser. 
+
+##### MAC Adresser
+
+Det er faktisk ikke selve ruterne og vertene som har linklagsadresser, men deres adaptere, dvs. nettverksinterfacene, som har linklagsadresser. 
+
+En vert eller ruter i et multiple network-interfaces vil dermed ha flere linklagsadresser assiosiert med den. Samme som at den har flere IP-adresser. Det er viktig å notere at linklagssvitsjer ikke har linklagsadresser assosiert med interfacene sine. En linklagsadresse er variert kalt en **LAN adresse**, en **fysisk adresse**, eller en **MAC adresse**. Siden MAC adresse er det som er mest brukt, er det det jeg bruker fremover.
+
+For de fleste LAner er MAC adressen 6 bytes lang, som gir 2<sup>48</sup> mulige MAC-adresser. De er representert som hexadecimalnotasjon, der hver byte er skilt. 
+
+![macadresses](https://i.imgur.com/2kji1D3.png)
+
+Selvom det var meningen av MAC-adressen skulle være permanente er det nå mulig å endre en adapters MAC-adresse gjennom programvare. Ingen adaptere har samme adresse. Men hvordan passer to selskaper i forskjellige lang på å asse på å bruke andre MAC-adresser enn andre land? Svaret er at det er IEEE som vedlikeholder MAC-adresserommet. Et selskap som skal lage adaptere, kjøper en klump med adresserom bestående av 2<sup>24</sup> adresser for en nominell sum. IEEE allokerer et adresserom på e av 2<sup>24</sup> adresser ved å bestemme de første 24 bitene av MAC-adressene, og lar selskapet bestemme de unike kombinasjonene av de siste 24 bitene for hvert adapter. 
+
+En adapters MAC-adresse har en flat struktur, og endrer seg ikke ut i fra hvor adapteren går. En PC med Ethernet-interface har samme MAC-adresse utansett hvor PC-en går. En mobil med et 802.11 interfave har samme MAC-adresse, uansett hvor mobilen er, kan sammenliknes med personnummer. Dette er en stor forskjell fra IP-adresser. Men på samme måte som en person kan finne det nyttig å både ha et personnummer og en postaddresse, kan det være nyttig for en vert- eller ruter-interface å ha både MAC adresse og IP-adresse. 
+
+Når et adapter ønsker å sende en ramme til en destinasjonsadapter, vil det sendende adapteret legge inn destiansjonsadapterets MAC-adresse inn i rammen og deretter sende rammen inni LAN-et. 
+
+Når et adapter mottar en ramme, vil den skjekke om destinasjons-MAC-adressen er den samme som adapterets. 
+
+> Noen ganger vil et adapter at alle andre adaptere skal få pakken, da kan man bruke MAC-adressen FF-FF-FF-FF-FF-FF. Som er en spesiell **MAC broadcast adresse**. 
+
+
+#### Address Resolution Protocol (ARP)
+
+Ettersom det er både nettverklagsadresser (f.eks. IP-adreser) og linklagsadresser (MAC-adresser), trengs det å kunne oversette mellom dem. For internettet er dette jobben til **Address Resolution Protocol (ARP)**. 
+
+For å forstå behovet for en protokoll som ARP, bør du vurdere nettverket som vises i figur 5.17. I dette enkle eksempelet har hver vert og ruteren en enkelt IP-adresse og en enkelt MAC-adresse. Som vanlig vises IP-adresser med stiplede desimaler og MAC-adresser vises i heksadesimal notasjon. I forbindelse med denne diskusjonen antar vi i denne delen at bryteren sender alle rammer; det vil si når en bryter mottar en ramme på ett grensesnitt, videresender rammen på alle sine andre grensesnitt. I neste avsnitt vil vi gi en mer nøyaktig utredning av hvordan brytere opererer.
+Anta nå at verten med IP-adresse 222.222.222.220 vil sende et IP datagram til vert 222.222.222.222. I dette eksemplet er både kilden og destinasjonen i samme delnett. For å sende et datagram må kilden gi sin adapter ikke bare IP-datagrammet, men også MAC-adressen for destinasjonen 222.222.222.222. Sendingsadapteren vil da konstruere en linklagsramme som inneholder destinasjonens MAC-adresse og sende rammen til LAN.
+
+![mac2](https://i.imgur.com/5lnQ7fo.png)
+
+Det viktige spørsmålet som er adressert i denne delen er, hvordan bestemmer den sendende verten MAC-adressen til mottakerverten med IP-adresse 222.222.222.222? Som du kanskje har gjettet, bruker den ARP. En ARP-modul i sendingsverten tar en hvilken som helst IP-adresse på samme LAN som inngang, og returnerer den tilhørende MAC-adressen. 
+
+* I eksempelet over sender senderverten 222.222.222.220 sin ARP-modulen IP-adressen 222.222.222.222, og ARP-modulen returnerer den tilsvarende MAC-adressen 49-BD-D2-C7-56-2A.
+
+Så vi ser at ARP oversetter en IP-adresse til en MAC-adresse. På mange måter er det analogt med *DNS*, som oversetter vertsnavn til IP-adresser. En **viktig forskjell** mellom de to beslutningstakere er imidlertid at DNS oversetter vertsnavn for verter hvor som helst på Internett, mens ARP løser IP-adresser bare for verter og rutergrensesnitt på samme delnett. Hvis en node i California skulle forsøke å bruke ARP for å løse IP-adressen til en node i Mississippi, ville ARP returnere med en feil.
+
+Nå som vi har forklart hva ARP gjør, la oss se på hvordan det fungerer. Hver vert og ruteren har en ARP-tabell i sitt minne, som inneholder mappings av IP-adresser til MAC-adresser. Figur 5.18 viser hva et **ARP-table** i verten 222.222.222.220 kan se ut. ARP-tabellen inneholder også en time-to-live-verdi (TTL), som indikerer når hver kartlegging vil bli slettet fra tabellen. 
+
+> En node har nødvendigvis ikke mappingen for alle andre noder i subnettet. 
+> 
+> En typisk utløpstid for en oppføring er 20 minutter fra når en oppføring er plassert i et ARP-bord.
+
+![arp-table](https://i.imgur.com/lkulypN.png)
+
+Men dersom en node ønsker å sende en pakke til en IP-adresse, og må finne MAC-adressen til denne IP-adressen. Svaret er enkelt om noden har destinasjonsnoden i ARP-tabellen. Men dersom den ikke er der, da må senderen bruke ARP-protokollen for å finne denne adressen. Da lager senderen en spesiell **ARP pakke*. En ARP-pakke har flere felt, inkludert senderens og mottakerens  IP- og MAC-adresser. Både query- og response-meldinger har samme format. 
+
+Sendernoden vil da sende en ARP-query pakke til MAC broadcast adressen, nemlig FF-FF-FF-FF-FF-FF. Adapteret innkapsler pakken i en linklagsramme og sender den inn i subnettet. Rammen som inneholder ARP-melingen blir mottatt hos alle de andre adapterene i subnettet, som sender det til ARP-modulene sine. Alle skjekker om IP-adressene i ARP-tabellen sin mathcer med destinasjons IP-adressen i ARP-pakken. Den som har en match, sender tilbake en ARP-melding med den ønskede mappingen til den forspørrende noden. Den mottakende noden oppdaterer ARP-tabellen sin, og sender til adressen som sto i responsmeldingen.
+
+* Er plug-and-play, trenger ingen konfigurering av en systemadministrator
+* Dersom en enhet forsvinner fra subnettet, slettes den etterhvert fra ARP-tabellene i subnettet.
+
+> Kan være diskusjon om hva slags protokoll ARP er, er linklayer-protokoll. Men kan sees på som en protokoll som både tilhører linklayer og transportlaget. 
+
+
+#### Sende et datagram utenfo subnettet
+
+Det burde når være klart hvordan ARP opererer når en vert vil sende et datagram til en vert *på samme subnet*. Men la oss se på en mer komplisert situasjon, når en vert i et subnet ønsker å sende et nettverksdatagram til en vert *utenfor subnettet*.
+
+Det flere ting å notere seg med figuren under. Hver vert har nøyaktiv en IP-adresse og ett adapter. Men som vi vet fra Kap 4, har en ruter en IP-adresse for *hvert* av sine interfacer. For hvert ruterinterface er det også en ARP-modul (i ruteren) og et adapter. I figuren har ruteren 2 interfacer, 2 adaptere, 2 ARP-moduler og henholdsvis 2 MAC-adresser. Noter også at Subnett 1 har nettverksadressen 111.111.111./24 og at Subnett 2 har nettvekrsadressen 222.222.222/24, og dermed har alle interfacene i subnett 1 adresser på formen 111.111.111.xxx, og i subnett 2 har interfacene 222.222.222.xxx. 
+
+![2subnets](https://i.imgur.com/ZBrJNs0.png)
+
+Dersom en vert i Subnet 1 ønsker å sende et datagram til en vert i Subnet 2, må den sendene verten sende datagrammet til adapteret sitt, men den sendende verten må også indikere MAC-adressen til den mottakende adapteren. Som vi ser i figuren må datagrammet først til ruteren for å komme seg til en mottakervert i subnet 2. Men hvordan får senderverten MAC-adressen til ruteren, med ARP selvfølgelig (Samme som over). Når senderverten sender rammen, vil ruteren ta den imot, se at den er til segog sende den til nettverkslaget til ruteren. Da var pakken fremme hos ruteren.   
+
+Vi må fortsatt flytte datagrammet fra ruteren til destinasjonsverten. Ruteren må nå bestemme riktig interface som datagrammet skal videresendes til. Som diskutert i kapittel 4, gjøres dette ved å konsultere et forwardingtable i ruteren. Forwardingtablen forteller ruteren at datagrammet skal videresendes via ruteren grensesnitt 222.222.222.220. Dette grensesnittet passerer da datagrammet til adapteren, som innkapsler datagrammet i en ny ramme og sender rammen til delnett 2. Denne gangen er måladressens MAC-adresse i virkeligheten MAC-adressen til det endelige målet. Og hvordan får ruteren denne destinasjons MAC-adressen? Fra ARP, selvfølgelig!
+
+
+#### Ethernet
+
+Ethernet har i hovedsak tatt over det kablede LAN-markedet. Ble oppfunnet på 1970-tallet, og har fortsatt å utvikle seg og vokse og har fortsatt sin dominerende posisjon. 
+
+I dag er Ethernet langt den mest utbredte kablede LAN-teknologien, og det er sannsynlig å forbli det i overskuelig fremtid. Man kan si at Ethernet har vært i lokalnettverk som Internett har vært på globalt nettverk.
+
+Det er mange grunner til Ethernet suksess. For det første var Ethernet det første distribuerte høyhastighetsnettverket. 
+
+> Fordi den ble distribuert tidlig, ble nettverksadministratorer fortrolige med Ethernet - dets underverk og dens kjennskap - og var motvillige til å bytte over til andre LAN-teknologier når de kom på scenen. For det andre var token-ring, FDDI og ATM mer komplekse og dyrere enn Ethernet, noe som ytterligere frarådde nettverksadministratorer fra å bytte over.
+
+* Det originale Ethernet LAN brukte en coax-bus som sammenkoblet nodene. Ethernet med bustop
+	* Ethernet med en busstopologi er et *broadcast LAN* - alle overførte rammer reiser til og behandles av alle adaptere som er koblet til bussen. 
+	* Husk at vi dekket Ethernets CSMA / CD-tilgangsprotokoll med binær eksponensiell backoff i tidligere avsnitt.
+
+Ved slutten av 1990-tallet hadde de fleste bedrifter og universiteter erstattet sine LAN med Ethernet-installasjoner ved hjelp av en *hubbasert* stjernetopologi. I en slik installasjon er vertene (og ruterne) direkte forbundet med *en hub* med *twisted pair copper wire*. En **hub** er en fysisklags-enhet som virker på individuelle bits i stedet for frames. Når en bit, som representerer en null eller en, kommer fra ett interface, gjenoppretter huben bit-en, øker energistyrken dens og overfører biten til alle de andre interfacene. 
+* Derfor er Ethernet med en hubbasert stjernetopologi også et broadcast LAN. Når et hub mottar en bit fra en av dens interfacer, sender den en kopi ut på alle sine andre interfacene. 
+
+> Dersom en hub mottar rammer fra to forskjellige interfacer samtidig, oppstår en kollisjon, og nodene som skapte rammene må sende dem på nytt.
+
+![startopology](https://i.imgur.com/iTy55QA.png)
+
+I begynnelsen av 2000-tallet opplevde Ethernet enda en stor evolusjonær endring. Ethernet installasjoner fortsatte å bruke en stjerne topologi, men huben i sentrum ble erstattet med en **switch**. Vi vil undersøke swithed Ethernet i dybden senere i dette kapittelet. For nå nevner vi bare at en bryter ikke bare er "kollisjonsløs", men er også en ekte store-and-forward pakkesvitsj; men i motsetning til rutere, som opererer opp gjennom lag 3, virker en svitsj kun opp gjennom lag 2.
+
+
+##### Ethernet Frame Structure
+
+![ethernetframe](https://i.imgur.com/9dqnvNp.png)
+
+Vi kan lære mye av Ethernet av å se på Ethernet-framen i figuren over. Vi noterer at selvom vår Ethernet-ramme bærer et IP-datagram, kan det også bære andre nettverklagspakker i payloaden. 
+
+La det sendende adatperet, adapter A, ha MAC-adressen AA-AA-AA-AA-AA-AA og det mottakende adapteret, adapter B, ha MAC-adressen BB-BB-BB-BB-BB-BB. Det sendende adapteret innkapsler IP-datagrammet i en Ethernet-ramme, og sender rammen til det fysiske laget. Det mottakende adapteret tar imot rammen fra det fysiske laget, ekstraherer IP-datagrammet og sender datagrammet til nettverkslaget. I denne konteksten la oss se på de 6 feltene i Ethernet-rammen i Figur 5.20:
+
+* *Data field (46 til 1,500 bytes).* Dette feltet har IP-datagrammet. Maximum transmission unit (MTU) til Ethernet er 1,500 bytes. Dette betyr at dersom et IP-datagram er større en 1,500 bytes, må verten fragmentere datagrammet som vi snakket om i Kap 4. Minimumstørrelsen til datafeltet er 46 byte. Dette betyr at dersom et datagram er mindre enn dette må man "fylle" resten av plassene slik at det blir 46 bytes. Bruker length-fieldet i IP-datagramme til å fjerne *fyll*. 
+
+* *Destination address (6 bytes).* Dette feltet inneholder MAC-adressen til destinasjonsadapteret. I eksempelet over blir det BB-BB-BB-BB-BB-BB.
+
+* *Source address (6 bytes).* Dette feltet inneholder MAC-adressen til det sendende adapteret, som i eksempelet blir AA-AA-AA-AA-AA-AA. 
+
+* *Type field (2 bytes).* Dette type-feltet tillater Ethernet å multiplekse nettverklagsprotokoller. For å forstå dette, må vi huske at verter kan bruke andre nettverkslagprotokoller i tillegg til IP. Faktisk kan en gitt vert støtte flere nettverkslagprotokoller ved hjelp av forskjellige protokoller for forskjellige applikasjoner. Av denne grunn, når Ethernet-rammen kommer til adapter B, må adapter B vite hvilken nettverkslagprotokoll den skal passere (det vil si demultiplekse) innholdet i datafeltet. 
+	* IP og andre protokoller for nettverkslaget har hver sitt eget standardiserte typenummer. I tillegg har ARP-protokollen (diskutert i forrige avsnitt) sitt eget typenummer, og hvis den ankommerrammen inneholder en ARP-pakke (dvs. har et typefelt på 0806 heksadesimale), vil ARP-pakken bli demultiplexert opp til ARP-prokol.
+
+* *Cyclic redundancy check (CRC) (4 bytes).* Som diskutert tidligere, er meningen til CRC-feltet å tillate det mottakende adapteret, adapter B, å detektere feil i rammen. 
+
+* *Preamble (8 bytes)*. Ethernet-rammen begynner med et 8-byte preamble-felt (*nor. innledning el. forord*). Hvert av de 7 første bytene har en verdi på 10101010; den siste byten har verdien 10101011. De første 7 byene av preable-en skal "vekke" mottaker-adapteret, og synkronisere klokkene dens til avsenderens klokke. Hvorfor skal klokkene være synkroniserende? Husk at adapter A har som mål å overføre rammen til 10 Mbps, 100 Mbps eller 1 Gbps, avhengig av typen Ethernet LAN. De to siste bitene (to etterfølgende 1-ere) varsler mottakeren at de "viktige greiene" kommer nå. 
+
+
+
+Alle Ethernet-teknologiene gir **connectionless** tjeneste til nettverkslaget. Det vil si når adapter A ønsker å sende datagram til adapter B, innkapsler adapter A datagrammet i en Ethernet-ramme og sender rammen inn i LAN-en uten *handshaking* med adapter B. Denne tilkoblingsløse tjenesten på lag 2 er analog (ligner på visse aspekter) med IPs layer 3 datagramtjeneste og UDPs layer 4 connectionless tjeneste.
+
+Ethernet-teknologier gir en **upålitelig** service til nettverkslaget. Spesielt når adapter B mottar en ramme fra adapter A, kjører den rammen gjennom en CRC-sjekk, men *verken* sender en bekreftelse når en ramme passerer CRC-sjekken eller sender en negativ bekreftelse når en ramme mislykkes CRC-sjekken. Når en ramme mislykkes i CRC-kontrollen, kasserer adapter B bare rammen. Adapter A har således ingen anelse om dens overførte ramme nådde adapter B og passerte CRC-sjekken. 
+
+* Denne mangelen på pålitelig transport (ved linklaget) bidrar til å gjøre Ethernet enkelt og billig. Men det betyr også at strømmen av datagrammer som sendes til nettverkslaget, kan ha hull.
+* Hvis det er hull på grunn av forkastede Ethernet-rammer, ser applikasjonen ved vert B også hullene? Som vi lærte i kapittel 3, avhenger dette av om applikasjonen bruker UDP eller TCP. 
+	* Hvis programmet bruker **UDP**, vil programmet i verten B faktisk se hullene i dataene. 
+	* På den andre siden, hvis applikasjonen bruker **TCP**, vil ikke TCP i vert B bekrefte dataene i forkastede rammer, noe som forårsaker at TCP i vert A skal sendes på nytt. Merk at når TCP sender data tilbake, vil dataene til slutt gå tilbake til Ethernet-adapteren der den ble kassert. På denne måten sender Ethernet således data videre, selv om Ethernet ikke vet om det overfører et helt nytt datagram med helt nye data, eller et datagram som inneholder data som allerede er overført minst en gang.
+
+##### Ethernet Technologies
+
+I vår diskusjon ovenfor har jeg henvist til Ethernet som om det var en enkelt protokollstandard. Men faktisk kommer Ethernet i mange forskjellige typer, med noe forvirrende akronymer som 10BASE-T, 10BASE-2, 100BASE-T, 1000BASE-LX, og 10GBASE-T.
+
+Disse og mange andre Ethernet teknlogier har blitt standardisert over årene av IEEE 802.3 CSMA/CD (Ethernet) arbeidsgruppen. Selvom disse akronymene viser veldig kompliserte, er det en orden. Akronymene referer til hastigheten til standarden: 10, 100, 1000, eller 10G, for 10 Megabit(/sec), 100 Megabit, Gigabit eller 10 Gigabit Ethernet. 
+
+"BASE" refererer til baseband Ethernet, noe som betyr at det *fysiske mediet* bare bærer Ethernet-trafikk; nesten alle **802.3**-standardene er for baseband Ethernet. Den siste delen av akronymet refererer til selve det fysiske mediet; Ethernet er både en linklag- og en fysisklagspesifikasjon, og bæres over en rekke fysiske medier, inkludert koaksialkabel, kobbertråd og fiber. Vanligvis refererer en "T" til tvunnede kobberledninger.
+
+* Historisk sett ble et Ethernet oppfattet som et segment av koaksialkabel. De tidlige 10BASE-2 og 10BASE-5 standardene angir 10 Mbps Ethernet over to typer koaksialkabel, hver begrenset i lengde til 500 meter. 
+	* Lengre avstander kan oppnås ved å bruke en **repeater** - en fysisk lag-enhet som mottar et signal på inputsiden, og regenererer signalet på outputsiden. 
+	* En koaksialkabel samsvarer pent med vårt syn på Ethernet som et broadcasting-medium. Alle rammer som overføres av ett grensesnitt, mottas ved andre grensesnitt, og Ethernets CDMA/CD-protokoll løser pent multiaksessproblemet.
+
+> Ethernet i dag er veldig annerledes den originale bus-topologi-designet med koaksialkabel. 
+> 
+> I de fleste innstallasjoner i dag, er noder tilkoblet til en svitsj gjennom et punkt-til-punkt-segment av tvunnet kobberkabel eller fiber-optiske kabler. 
+
+I midten av 1990-tallet ble Ethernet standardisert til 100 Mbps, 10 ganger raskere enn 10 Mbps Ethernet. Den opprinnelige Ethernet MAC-protokollen og rammeformatet ble beholdt, men høyerehastighets fysiske lag ble definert for kobbertråd (100BASE-T) og fiber (100BASE-FX, 100BASE-SX, 100BASE-BX). Figur 5.21 viser disse forskjellige standardene og den vanlige Ethernet MAC-protokollen og rammestilen.
+
+![ethernetstandarder](https://i.imgur.com/V5RvgIh.png)
+
+100 Mbps Ethernet er begrenset til en 100 meter avstand over tvunnet kobberkabel og til flere kilometer over fiber, noe som gjør at Ethernet-brytere i forskjellige bygninger kan kobles sammen.
+
+Gigabit Ethernet er en utvidelse av de svært vellykkede 10 Mbps og 100 Mbps Ethernet-standarder. Gigabit Ethernet har en rå datahastighet på 1000 Mbps, og har full kompatibilitet med den store installerte basen av Ethernet-utstyr. Standarden for Gigabit Ethernet, referert til som IEEE 802.3z, gjør følgende:
+
+* Bruker standart Ethernet ramme-format (Figur 5.20), og er baklengskompatibel med 10BASE-T og 100BASE-T teknologi. Dette tillater enkel intergrering av Gigabit Ethernet med eksisterende installerte baser av Ethernetutstyr.
+* Tillater punkt-til-punkt-koblinger i tillegg til delte kringkastingskanaler. Punkt-til-punkt koblinger brukes svitjser, mens kringkastingskanaler bruker huber, som nevt tidligere. I Gigabit Ethernet jargon er hubs kalt *buffered distributors*. 
+* Bruker CSMA/CD for delte kringkastingskanaler - maksimumavstanden mellom noder er strengt begrenset pga maksimal effektivitet. 
+* Tillater full-duplex / fullstendig toveis-operering på 1,000 Mbps i begge retninger for punkt-til-punkt-kanaler. 
+
+
+> Kunne i utgangspunktet kun kjøre over optisk fiber, men idag kan den også kjøre over kategori 5 UTP-kabling. 
+
+
+Oppsummering av Ethernet:
+
+* I starten med bustopologier og hub-basert stjerne topologier, var Ethernet klart en kringkastingskanal, der rammekollisjoner fant sted. 
+* For å håndtere dette inkluderte Ethernet standarden CSMA/CD-protokollen
+* Det er kommet svitsj-basert Ethernet som bruker store-and-forward pakkesvitsjing. 
+* Moderne switcher er full-duplex, slik at en svitsj og en node kan sende rammer til hverandre samtidigt uten innblanding. Med andre ord er svitsj-basert Ethernet LAN uten kollisjoner, og trenger faktisk egt ikke en MAC-protokoll. 
+
+
+
+#### Link-Layer Switches
+
+Rollen til en svitsj er å motta inkommende koblinglagsrammer, og videresende dem inn i utgående koblinger. Vi skal se på denne vi videresendingsfunksjonen, og vi kommer til å se at svitsjen i seg selv er **gjennomsiktig** for vertene og ruterne, det vil si at en vert/ruter adresserer rammer til en annen vert/ruter, uten å vite om en svitsj vil motta rammen og videresende den. 
+
+Raten til rammer som ankommer til en av bryterens utgangsinterfacer, kan overskride linkkapasiteten til dette grensesnittet. For å imøtekomme dette problemet, må svitsj utgangsinterfacer ha buffere, på omtrent samme måte som ruteren utgangsinterface har buffere for datagrammer. La oss nå se nærmere på hvordan svitsjer fungerer.
+
+#### Forwarding and Filtering
+
+**Filtering** er svitsjfunksjonen som bestemmer om en ramme skal videresendt til et interface, eller bli forkastet. **Forwarding** er svitsjfunksjonen som bestemmer hvilke interfacer som en ramme skal bli sendt i, og videresende rammen til de interfacene.
+
+Svitsjfiltrering og forwarding er gjort med et **switch table**. Denne svitsjtabellen inneholder rader for noen av, men nødvendigvis ikke alle, vertene og ruterne i et LAN. En rad i svitsjtabellen består av (1) en MAC-adresse, (2) switchinterfacet som leder til MAC-adressen, og (3) tiden når raden ble innsatt i tabellen. Figuren under viser en svitsjtabell:
+
+![switchtable](https://i.imgur.com/PUTXYir.png) 
+
+Selv om denne beskrivelsen av rammeoverføring kan høres ut som vår diskusjon av datagram-videresending i Kap. 4, ser vi snart at det er viktige forskjeller. En viktig **forskjell** er at svitsjer videresender pakker basert på *MAC-adresser i stedet for på IP-adresser*. Vi vil også se at en svitsjtabell er konstruert på en helt annen måte enn en ruters forwardingtabell.
+
+
+For å forstå hvordan bytte filtrering og videresending fungerer, anta en ramme med destinasjonsadresse *DD:DD:DD:DD:DD:DD* kommer til bryteren på grensesnitt *x*. Bryteren indekserer sitt bord med MAC-adressen *DD:DD:DD:DD:DD:DD*. Det er tre mulige tilfeller:
+
+* Det er ingen oppføring i tabellen for *DD:DD:DD:DD:DD:DD*. I dette tilfellet videresender svitsjen kopier av rammen til utgangsbuffere foran alle grensesnitt bortsett fra grensesnitt *x*. Med andre ord, hvis det ikke er noen oppføring for destinasjonsadressen, kringkaster svitsjen rammen.
+
+* Det er en oppføring i tabellen som forbinder *DD:DD:DD:DD:DD:DD* med interfacet *x*. I dette tilfellet kommer rammen fra et LAN-segment som inneholder adapter *DD:DD:DD:DD:DD:DD*.* Dermed er det ikke er nødvendig å videresende rammen til noen av de andre grensesnittene, utfører svitsjen filtreringsfunksjonen ved å forkaste rammen.
+
+* Det er en oppføring i tabellen som forbinder *DD:DD:DD:DD:DD:DD* med interfaces *y* ≠ *x*. I dette tilfellet må rammen sendes til LAN-segmentet som er festet til grensesnitt *y*. Bryteren utfører sin videresendingsfunksjon ved å sette rammen i en utgangsbuffer som går foran grensesnittet *y*.
+
+
+#### Self-Learning
+
+A svitsj har den fantastiske egenskapen av at tabellen dens bygges automatisk, dynamisk og autonomisk - uten noen innvending. Med andre ord er svitsjer **self-learning**. Denne egenskapen er oppnådd følgende:
+
+1. Svitsjtabellen er i utgangspunktet tom.
+2. For hver inkommende ramme på et interface, lagrer svitsjen (1) MAC-adressen til rammens *source address field*, (2) interfacet som rammen ble sendt fra, og (3) nåværende tidspunkt, i svitsjtabellen. Dersom enhver vert i LAN-et etterhvert skulle ha en ramme, ville alle vertene ha havnet i tabellen. 
+3. Svitsjen sletter en andresse i tabellen dersom ingen rammer er mottatt fra den adressen som kilde-adresse, etter en viss periode (**aging time**). På denne måten, dersom en PC blir ersattet av den andre PC-en (med et annen adapter), vil MAC-adressen fra den første PC-en etterhvert forsvinne fra tabellen 
+
+
+Svitsjer er **plug-and-play devices**, ettersom det ikke kreves noen inngrep fra en nettverksadministrator eller bruker. Svitsjer er også *full-duplex*, som gjør at den kan motta og sende samtidigt. 
+
+
+#### Properties of Link-Layer Switching
+
+Etter å ha beskrevet den grunnleggende operasjonen av en linklagsbryter, la oss nå vurdere funksjonene og egenskapene deres. Vi kan identifisere flere fordeler ved å bruke brytere, istedet for broadcastkoblinger som busser eller hubbaserte stjernetopologier:
+
+* *Eliminiation of collisions.* I en LAN bygget av svitsjer (uten hubs), er det ingen båndbredde mistet på grunn av kollisjoner. Som med en ruter, er den maksimume gjennomstrømningen til en svitsj summen av alle interface-ratene.  Dermed gir brytere en betydelig ytelsesforbedring over LAN med kringkastingskoblinger.
+
+* *Heterogenous links.* Ettersom en svitsj isolerer en link fra en annen, kan de forskjellige koblingene i LAN-et operere på forskjellige hastigheter og forskjellige mediumer. 
+
+* *Management,* I tillegg for å tilby ekstra sikkerhet, vil en svitsj også lette på nettverksadministrasjon. Hvis en adapter for eksempel feiler og kontinuerlig sender Ethernet-rammer (kalt en *jabbering-adapter*), kan en svitsj oppdage problemet og internt koble fra den malfunksjonelle adapteren.  Svitsjer samler også statistikk over båndbreddebruk, kollisjonssatser og trafikktyper, og gjør denne informasjonen tilgjengelig for nettverksadministratoren. 
+
+##### Sniffing a Switched LAN: Switch Poisoning
+
+Antar i eksempelet et *switched LAN*. Dersom en vert A ønsker å sende en pakke til vert B, gjennom en svitsj, og B er i svitsj-tabellen vil pakken sendes direkte, og *kun*, til vert B. Dersom en vert C, kjører en sniffer, vil ikke C være i stand til å sniffe A-to-B-rammen. 
+
+Mens dersom vert B ikke er i svitsjtabellen, vil svitsjen kringkaste rammen, og C vil kunne sniffe pakken. 
+
+Et vellkjent angrep mot en svitsj, er kalt **switch poisoning**, der man sender et tonn med pakker til en svitsj, med mange forskjellige tulle kilde-MAC-adresser, og dermed fylle svitsjtabellen, og dermed ikke lar det være noen plass til andre MAC-adresser med ekte verter.
+
+Dette forårsaker at svitsjen vil kringkaste de fleste rammer, slik at de kan bli plukket opp av en sniffer. 
+
+
+#### Switches Versus Routers
+
+Som vi har lært i Kap. 4, er rutere store-and-forward pakkesvitsjer som videresender pakker som bruker nettverkslagsadresser (f.eks. IP-adresser). Selv om en svitsj også er en store-and-forward pakkesvitsj, er den fundamentalt forskjellig fra en ruter ved at den videresender pakker ved hjelp av MAC-adresser. Mens ruteren er en lag-3-pakkesvitsj, er svitjsen en lag-2 pakkesvitsj.
+
+Selv om brytere og rutere er fundamentalt forskjellige, må nettverksadministratorer ofte velge mellom dem når du installerer en samtrafikk. Gitt at både svitjser og rutere er kandidater for sammenkoblingsenheter, hva er fordelene og ulemperne ved de to tilnærmingene?
+
+**Pros and Cons - Svitjser:**
+
+Først vurdere fordeler og ulemper ved svitjser. Som nevnt ovenfor er svitjser plug-and-play, en egenskap er elsket av alle overarbeidede nettverksadministratorer i verden. Svitjser kan også ha relativt høye filtrerings- og videresendingshastigheter - som vist i figur 5.24, må brytere bare behandle rammer opp gjennom lag 2, mens rutere må behandle datagrammer opp gjennom lag 3. 
+
+På den andre siden, for å hindre sykler av kringkastingsrammer, er den aktive topologien til et switchet nettverk begrenset til et spenntre. Et stort switchet nettverk ville også kreve store ARP-tabeller i verter og rutere og ville generere betydelig ARP-trafikk og behandling. 
+Videre er brytere utsatt for kringkastingsstormer. Hvis en vert går ut av kontroll og overfører en endeløs strøm av Ethernet-sendingsrammer, vil bryterne videresende alle disse rammene, slik at hele nettverket faller sammen.
+
+**Pros and Cons - Rutere:**
+
+Nå vurdere fordeler og ulemper med rutere. Fordi nettverksadressering ofte er hierarkisk (og ikke flatt, som MAC-adressering), kjører ikke pakker normalt ikke via rutere, selv når nettverket har overflødige stier. (Imidlertid kan pakker sykle når rutetabeller er feilkonfigurerte, men som vi lærte i kapittel 4, bruker IP et spesielt datagramheaderfelt for å begrense syklingen (TTL)). 
+
+Pakker er således ikke begrenset til et spenntre og kan bruke den beste veien mellom kilde og destinasjon. Fordi rutere ikke har spennbegrensningen, har de fått internett til å bli bygget med en rik topologi som blant annet inneholder flere aktive koblinger mellom Europa og Nord-Amerika. 
+
+En annen egenskap av rutere er at de gir brannmurbeskyttelse mot lag-2 kringkastede stormer. Kanskje den *viktigste ulempen* med rutere er at de *ikke* er *plug-and-play* og vertene som kobler til dem, trenger at deres IP-adresser skal konfigureres. Også rutere har ofte en *større prosesseringstid* per pakke enn svitjser, fordi de må behandle seg gjennom lag 3-feltene. 
+
+
+**Så, når skal man bruke hva?**
+
+Gitt at både svitsjer og rutere har sine fordeler og ulemper (som oppsummert i tabell 5.1 under), når skal et institusjonelt nettverk (for eksempel et universitetskampusnett eller et bedriftsnettsted) bruke brytere, og når skal det bruke rutere? 
+
+Vanligvis små nettverk bestående av noen få hundre verter, har noen få LAN segmenter. Brytere er nok for disse små nettverkene, da de lokaliserer trafikk og øker gjennomstrømning uten å kreve noen konfigurasjon av IP-adresser. 
+
+Men større nettverk bestående av tusenvis av verter inkluderer vanligvis rutere i nettverket (i tillegg til brytere). Ruterne gir en mer robust isolasjon av trafikk, kontroll kringkastingsstormer, og bruker mer "intelligente" ruter blant vertene i nettverket.
+
+
+![routervsswitch](https://i.imgur.com/ZIhVmr9.png)
+
+
+### Retrospective: A Day in the Life of a Web Page Request
+
+Nå som vi har sett på koblingslaget i dette kapitellet, og nettverk, transport, og applikasjonslaget, er veien nedover protokollstakken komplett. 
+
+Vi skal nå se på det store bildet, og dette gjør vi ved å se på den enkelste forespørselen: nedlasting av en webside.
+
+![dayinthelife](https://i.imgur.com/1JIYhbB.png)
+
+#### Getting Started: DHCP, UDP, IP and Ethernet
+
+La oss anta at Bob starter opp datamaskinen sin, kobler til en Ethernet kalbel tilkoblet skolens Ethernet svitsj, som igjen er koblet til skolens ruter, som vist i Figur 5.32. Skolens ruter er koblet til en ISP, som i dette tilfellet er comcast.net. I dette tilfelle tilbyr comcast.net DNS-tjeneste for skolen, og DNS-serveren ligger på Comcast nettverket istedet for skolens nettverk. Vi antar at det kjører en DHCP-server på ruteren. 
+
+Når Bob først kobler PCen sin til nettverket, kan an ikke gjøre noe uten en IP-adresse. Den første nettverksrelaterte oppgaven tatt av Bob sin datamaskin er å kjøre DHCP protokollen for å få en IP-adresse, fra den lokale DHCP-serveren:
+
+1. Operativsystemet i Bobs PC lager en **DHCP request melding** og putter den inn i **UDP-segment** med destinasjonsport 67 (DHCP server), og kildeport 68 (DHCP klient). UDP-segmentet innkasples i et **IP-datagram**  med en kringkastings IP-adresse (255.255.255.255) og en kilde IP-adresse på 0.0.0.0, siden Bobs PC ikke har noen IP-adresse enda. 
+2. IP-datagrammet som inneholder DHCP-req-meldingen er så plassert i en **Ethernet frame**. Ethernet rammen har en destinasjons MAC-adresse på FF:FF:FF:FF:FF:FF, slik at rammen blir sendt til alle enhetene koblet til svitsjen (og forhåpentligvis en DHCP server) - Rammens kilde MAC-adresse er den av Bobs bærbar PC, 00:16:D3:23:68:8A.
+3. Den kringkastede Ethernetrammen i er den første rammen sendt av Bobs PC til Ethernetsvitsjen. Svitjen kringkaster den innkommende rammen til alle utgangsporter, inkludert den koblet til ruteren. 
+4. Ruteren mottar rammen, inneholdende DHCP-requesten på interfacet med MAC-adresse 00:22:6B:45:1F:1B, og IP-datagrammet blir ekstrahert fra Ethernetrammen. Datagrammets kringkastede IP-destinasjonsadresse indikerer at dette IP-datagrammet skal behandles av øvre lagsprotokoller ved denne noden, slik at datagramets nyttelast (et UDP-segment) dermed blir **demultiplekset** opp til UDP, og DHCP-forespørselen meldingen blir hentet fra UDP-segmentet. DHCP-serveren har nå DHCP-forespørsel meldingen.
+5. La oss anta at DHCP-serveren kan allokere IP-adresser i **CIDR** (Classless Inter-Domain Routing) block 68.85.2.0/24. La oss anta at DHCP serveren allokerer adresse68.85.2.101 til Bobs PC. DCHP-serveren alger så en **DHCP ACK melding** inneholdene denne IP-adressen, i tilegg til IP-adressen til DNS-serveren (68.87.71.226), IP-adressen til standard gateway ruteren (68.85.2.1), og subnettmasken (68.85.2.0/24). DHCP meldingen puttes i et UDP-segment, som puttes inn i IP-datagram, som igjen puttes inn i en Ethernetramme. Ethernetrammen har en kilde-MAC-adresse til ruterens interface til hjemmenettverket (00:22:6B:45:1F:1B) og en destinasjons-MAC-adresse til Bobs datamasking(00:16:D3:23:68:8A).
+6. Ethernettrammen inneholdene DHCP ACK-en blir sent av ruteren til svitsjen. Siden svitsjen er **self-learning* og har tidligere mottat en Ethernetramme (DHCP request) fra Bobs PC, vet svitsjen at den skal videre sende rammen adressert til 00:16:D3:23:68:8A kun til den eneste utgangsporten går til Bobs PC.
+7. Bobs PC mottar Ethernet rammen, inneholdne DHCP ACK-en, ekstraherer IP-datagrammet fra Ethernetrammen, ekstraherer UDP-segmentet fra IP-datagrammet og ekstraherer DHCP ACK meldingen fra UDP-segmentet. Bobs DHCP-klient lagrer så dens IP-adresse, IP-adressen til dens DNS-server. Den installerer også adresen til den standarde gateway serveren inn i dens **IP forwarding table**. Bobs PC vil nå kunne sende alle datagrammer med destinasjonsadresser utenfor dens subnett 68.85.2.0/24, til den standarde gateway ruteren. På dette tidspunktet har Bobs laptop initialisert nettverkskomponenter og er klar til å begynne å behandle webside-henting.  (Noter at det er kun de to siste stegene beskrevet i Kap. 4 om DHCP som er nødvendige)
+
+
+#### Still Getting Started: DNS and ARP
+
+Når Bob skriver inn URL-en for *www.google.com* inn i nettleseren sin, begynner en lag kjede av hendelser som etterhvert resulterer i at Google sin hjemmeside blir vist i nettleseren hans. Bobs nettleser begynner prosessen ved å lage en **TCP-socket** som vil bli brukt til å sende **HTTP-requesten** til *www.google.com*. For å kunne lage en socket, må Bobs PC vite IP-adressen til *www.google.com*. Det er **DNS protokollen** som tilbyr navn-til-IP-adresse oversettingstjenesten. 
+
+1. Operativsystemet på Bobs PC lager en **DNS query melding**, og putter strengen "www.google.com" i spørsmål-seksjonen i DNS-meldingen. Denne DNS-meldingen plasseres i et UDP-segment med destinasjonsport 53 (DNS-server). UDP-segmentet plasseres i et IP-datagram med destinasjons IP-adressen 68.87.71.226 (DNS-adressen returnert i DCHP ACK-meldingen) og en kilde IP-adresse på 68.85.2.101.
+2. Bobs datamasking plasserer så datagrammet i en Ethernetramme. Denne rammen blir sendt (addresert, i linklaget) til gatewayruteren. Men selvom Bobs datamaskin vet IP-adressen til skolens gateway ruter (68.82.2.1.) via DHCP ACK-meldingen, vet den ikke gateway ruterens MAC-adresse. For å finne MAC-adressen til ruteren, må Bobs datamaskin bruke **ARP protokollen**.
+3. Bobs datamaskin lager en **ARP spørre-melding** med en mål-IP-adresse på 68.85.2.1 (gateway ruteren), plasserer ARP-meldingen i en Ethernet-ramme med kringkastings destinasjonsadresse (FF:FF:FF:FF:FF:FF) og sender Ethernetrammen til svitsjen, som leverer rammen til ale tilkoblede enheter, i tilegg til gatewayruteren. 
+4. Gatewayruteren mottar rammen med ARP-spørremeldingen på interfacet til skolens nettverk, og finner mål-IP-adressen til 68.85.2.1 i ARP-meldingen og matcher denne IP-adressen med sitt interface. Gatewayruteren forbereder et **ARP reply**, indikerer sin MAC-adresse (00:22:6B:45:1F:1B) korresponderer med mål-IP-adressen. Plasserer ARP-replymeldingen i en Ethernetramme, og sender den til svitsjen som leverer rammen hos Bobs datamaskin. 
+5. Bobs datamaskin mottar rammen med ARP-replymeldingen, og ekstraherer MAC-adressen til gatewayruteren fra rammen.
+6. Bobs datamaskin kan endelig adressere Eternetrammen med DNS-spørringen til gatewayruterens MAC-adresse. Han sender IP-datagrammet med IP-destinasjonsadressen til DNS-serveren, i rammen med destinasjonsadresse hos gatewayruteren, til svitsjen, som leverer rammen hos gatewayruteren. 
+
+
+#### Still Getting Started: Intra-Domain Routing to the DNS Server
+
+1. Gatewayruteren mottar rammen og ekstraherer IP-datagrammet inneholdene DNS-spørringen. Ruteren slår opp destinasjonsadressen til datagrammet (68.87.71.226) og bestemmer fra forwardingtabelet sitt at datagrammet skal bli set til den vestre ruteren i Comcast nettverket i Figur 5.32 over. IP-datagrammet legges i en linklagsramme passende for linken som går mellom skolens ruter og Comcast sin venstre ruter, og rammen blir sendt over denne koblingen. 
+2. Ruteren mest til venstre i Comcast sitt nettverk mottar rammen, ekstraherer IP-datagrammet, eksaminerer datagrammets destinasjonsadresse, og bestemmer den utgående interfacet som datagrammet skal bli videresendt til DNS-serveren til, ut fra dens forwarding table, som har blitt fyllt av Comcasts intra-domain protocol (som *RIP*) i tillegg til **Internets inter-domain protocol, BGP**.
+3. Til slutt kommer IP-datagrammet med DNS-spørringen til DNS-serveren. DNS-serveren ekstraherer DNS-spørringen, slår opp på navnet *www.google.com* i DNS databasen sin, og finner **DNS resource recorden** som inneholder IP-adressen (64.233.16.105) for *www.google.com* (antatt at den er cachet i DNS-serveren). DNS-serveren lager en **DNS reply melding** inneholdene vertsnavn-til-IP-adressemappingen, og plasser DNS-replymeldingen i et UDP-segment, og segmentet i et IP-datagram adressert til Bobs datamaskin. Dette datagrammet vil bli videresendt tilbake gjennom Comcasts nettverk til skolens ruter og fra der, gjennom Ethernetsvitsjen til Bobs datamaskin. 
+4. Bobs datamaskin ekstraherer UP-adressen til serveren *www.google.com* fra DNS-meldingen. Til slutt, er Bobs datamaskin endelig klar for å ta kontakt med *www.google.com* serveren. 
+
+#### Web Client-Server Interaction: TCP and HTTP
+
+1. Nå som Bobs datamaskin har IP-adressen til *www.google.com*, kan den lage en **TCP-socket** som vil bli brukt til å sende **HTTP GET** meldingen. Når Bob lager en TCP socket, vil TCP-en i Bobs datamaskin først utføre en **three-way handshake** med TCP-en hos *www.google.com*. Bobs datamaskin lager et **TCP SYN** segment med destinasjonsport 80 (for HTTP), plasserer TCP-segmentet i et IP-datagram med destinasjons-IP-adressen 64.233.169.105 (*www.google.com*), plasserer datagrammet i en ramme med destinasjons MAC-adresse 00:22:6B:45:1F:1B (gatewayruteren) og sender rammen til svitsjen. 
+2. Ruteren i skolens nettverk, Comcasts nettverk og Googles nettverk videresender datagrammet med TCP SYN til *www.google.com*, ved å bruke forwardingtablene i hver ruter.
+3. Til slutt kommer datagrammet med TCP SYN frem til *www.google.com*. TCP SYN-meldingen blir ekstrahert fra datagrammet, demultiplekset til velkomstsocketen med port 80. En connection socket blir laget for TCP-tilkoblingen mellom Google HTTP-serveren og Bobs datamaskin. Et **TCP SYN ACK**-segment blir generet, plassert i et datagram og adressert til Bobs datamaskin, plassert i en linklagsramme passende for koblingen som kobler sammen *www.google.com* til sin første hop-ruter.
+4. Datagramet med TCP SYNACK-segmentet blir videresendt gjennom Google, Comcast, skolenettverket, og til slutt hos Ethernetkortet på Bobs datamaskin. Datagrammet blir demultiplekset til TCP-socketen laget i steg 1, som går inn i sin tilkoblede tilstand. 
+5. Med socketen på Bobs PC klar for å sende bytes til *www.google.com*, lager Bobs nettleser en HTTP GET-mlelding med URL-en som ønskes. HTTP GET-meldingen blir skrevet inn i socketen, men GET-meldingen som blir payloaden til et TCP-segment. TCP-segmetet blir plassert i et datagram, og sendt og levert hos *www.google.com**, etter stegene 1-3 over. 
+6. HTTP-serveren hos *www.google.com* leser HTTP GET-meldingen fra TCP-socketen, lager en **HTTP response** melding, plasserer den forespurte nettsidens innhold i bodyen til HTTP response-meldingen, og sender den inn i TCP-socketen. 
+7. Datagrammet med HTTP responsmeldingen blir videresendt gjennom Google, Comcast og skolenettverekene, og ankommer Bobs datamaskin. Bobs nettleserprogram leser HTTP Responsmeldingen fra socketen, ekstraherer html-en for nettsiden fra bodyen til HTTP Resposnen, og viser endelig nettsiden. 
+
+
 
 
 
