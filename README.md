@@ -18,7 +18,7 @@ Repository for teori og øvinger til Algoritmer og datastrukturer - TDT 4120.
 9. [Kapittel 9 - *Network Management*](#kap9)
 
 <a name="kap1"></a>
-## Kapittel 1
+## Kapittel 1 - Computer Networks and the Internet
 
 ### What Is the Internet
 
@@ -2566,7 +2566,7 @@ Ved slutten av 1990-tallet hadde de fleste bedrifter og universiteter erstattet 
 
 ![startopology](https://i.imgur.com/iTy55QA.png)
 
-I begynnelsen av 2000-tallet opplevde Ethernet enda en stor evolusjonær endring. Ethernet installasjoner fortsatte å bruke en stjerne topologi, men huben i sentrum ble erstattet med en **switch**. Vi vil undersøke swithed Ethernet i dybden senere i dette kapittelet. For nå nevner vi bare at en bryter ikke bare er "kollisjonsløs", men er også en ekte store-and-forward pakkesvitsj; men i motsetning til rutere, som opererer opp gjennom lag 3, virker en svitsj kun opp gjennom lag 2.
+I begynnelsen av 2000-tallet opplevde Ethernet enda en stor evolusjonær endring. Ethernet installasjoner fortsatte å bruke en stjerne topologi, men huben i sentrum ble erstattet med en **switch**. Vi vil undersøke swithed Ethernet i dybden senere i dette kapittelet. For nå nevner vi bare at en svitsj ikke bare er "kollisjonsløs", men er også en ekte store-and-forward pakkesvitsj; men i motsetning til rutere, som opererer opp gjennom lag 3, virker en svitsj kun opp gjennom lag 2.
 
 
 ##### Ethernet Frame Structure
@@ -2671,7 +2671,7 @@ For å forstå hvordan bytte filtrering og videresending fungerer, anta en ramme
 
 #### Self-Learning
 
-A svitsj har den fantastiske egenskapen av at tabellen dens bygges automatisk, dynamisk og autonomisk - uten noen innvending. Med andre ord er svitsjer **self-learning**. Denne egenskapen er oppnådd følgende:
+En svitsj har den fantastiske egenskapen av at tabellen dens bygges automatisk, dynamisk og autonomisk - uten noen innvending. Med andre ord er svitsjer **self-learning**. Denne egenskapen er oppnådd følgende:
 
 1. Svitsjtabellen er i utgangspunktet tom.
 2. For hver inkommende ramme på et interface, lagrer svitsjen (1) MAC-adressen til rammens *source address field*, (2) interfacet som rammen ble sendt fra, og (3) nåværende tidspunkt, i svitsjtabellen. Dersom enhver vert i LAN-et etterhvert skulle ha en ramme, ville alle vertene ha havnet i tabellen. 
@@ -2790,5 +2790,1284 @@ Når Bob skriver inn URL-en for *www.google.com* inn i nettleseren sin, begynner
 
 
 
+<br></br> 
 
+<a name="kap6"></a>
+## Kapittel 6 - Wireless and Mobile Networks
+
+
+To viktige ord å kunne se forskjellen på er trådløs og mobilitet - for det vil kunne la oss bedre isolere, identifisere og mestre nøkkelkonseptene i hvert område.
+
+Noter at det er mange nettverksmiljøer der nodene er *trådløse*, men ikke *mobile* (f.eks. trådløse hjemme eller kontornettverk med stasjonære arbeidsstasjoner og store skjermer, og at det er begrensede former for mobilitet som ikke krever trådløse koblinger (for eksempel en arbeidstaker som bruker en kablet bærbar PC hjemme, slår av den bærbare datamaskinen, stasjoner til jobb og kobler den bærbare til selskapets kablede nettverk). 
+
+Selvfølgelig er mange av de mest spennende nettverksmiljøene de der brukerne er både trådløse og mobile, for eksempel et scenario der en mobilbruker i en bil opprettholder en Voice-over-IP-samtale og flere pågående TCP-tilkoblinger mens mens han raser ned motorveien til 160 kilometer i timen. Det er her, i krysset mellom trådløs og mobilitet, at vi finner de mest interessante tekniske utfordringene!
+
+
+### Introduction 
+
+Vi kan begynne med å holde diskusjonen generell nok til å dekke en rekke med nettverk, inkludert både trådløs  LANs som IEEE 802.11 og mobilnett slik som et 3G nettverk. Vi kan identifisere følgende elementer i et trådløst nettverk:
+
+* *Wireless hosts.* Som i kablete nettverk er verter endesystemer som kjører applikasjoner En **trådløs vert** kan være en datamaskin, smarttelefon, eller en iPad. Vertene selv kan være mobile, eller ikke. 
+
+* *Wireless links.* En vert kobler seg til en basestasjon (definert under) eller til andre trådløse verten gjennom en **trådløs kommunikasjonskobling/link**. Forskjellige trådløse koblingsteknologier har forskjellige overføringsrater, og kan overføre over forskjellige avstander. Figur 6.2 viser to nøkkelegenskaper (*dekningsområde* og *koblingsrate*) av de mer populære trådløse nettverksstandardene. (Figuren er bare ment å gi en grov ide om disse egenskapene). 
+
+
+![wireless2](https://i.imgur.com/tgn9Xdh.png)
+
+
+* *Base station.* **Basestasjonen** er nøkkeldelen for den trådløse infrastrukturen. Ulikt en trådløs vert og en trådløs kobling, er basestasjonen ingen åpenbar motstykke til kablet nettverk. En basestasjon er ansvarlig for sending og mottak av data (for eksempel pakker) til og fra en trådløs vert som er tilknyttet den basestasjonen. En basestasjon vil ofte være ansvarlig for å koordinere overføringen av flere trådløse verter som den er tilknyttet. Når vi sier at en trådløs vert er "tilknyttet" en basestasjon, mener vi at (1) verten befinner seg innenfor basestasjonens trådløse kommunikasjonsdistanse, og (2) verten bruker den basestasjonen for å videresende data mellom den (verten) og det større nettverket. **Celltowers** (*nor. teletårn*) i mobilnett og aksesspunkterpunkter i 802.11 trådløse LAN er eksempler på basestasjoner.
+
+	Verter tilknyttet en basestasjon refereres ofte til som opererende i *infrastrukturmodus*, siden alle tradisjonelle nettverkstjenester (for eksempel adressetildeling og ruting) er gitt av nettverket som en vert er koblet til via basestasjonen. I **ad hoc-nettverk** har trådløse verter ingen slik infrastruktur som å koble til. I mangel av slik infrastruktur må vertene selv sørge for tjenester som ruting, adressetildeling, DNS-lignende navneoversettelse og mer. 
+
+	Når en mobil (*adj.*) vert beveger seg utenfor rekkevidden til en basestasjon og inn i rekkevidden til en annen, vil den endre sin tilknytning i det større nettverket (dvs. bytte basestasjon som det er tilknyttet) en prosess referert til som **handoff** . 
+	
+	*	Slik mobilitet gir mange utfordrende spørsmål. Hvis en vert kan flytte seg, hvordan finner man mobilens vert nå i nettverket, slik at data kan videresendes til den mobile verten? Hvordan håndteres adressering, gitt at en vert kan være på en av mange mulige steder? Hvis verten beveger seg under en TCP-tilkobling eller telefonsamtale, hvordan blir data rutet slik at forbindelsen fortsetter uavbrutt?
+
+* *Network infrastructur.* Dette er det større nettverket som en trådløs vert kan ønske å kommunisere med.
+
+
+Etter å ha diskutert "brikkene" i et trådløst nettverk, bemerker vi at disse brikkene kan kombineres på mange forskjellige måter for å danne forskjellige typer trådløse nettverk. På høyeste nivå kan vi klassifisere trådløse nettverk i henhold til to kriterier: *(1)* om en pakke i det trådløse nettverket krysser nøyaktig *en trådløs hop eller flere trådløse hops*, og *(2)* om det er *infrastruktur* slik som en basestasjon i nettverket:
+
+
+* *Single-hop, infrastructure-based.* Disse nettverkene har en basestasjon som er koblet til et større kablet nettverk (for eksempel Internettet). Videre er all kommunikasjon mellom denne basestasjonen og en trådløs vert over en enkelt trådløs hop. 802.11-nettverkene du bruker i klasserommet, på kaféen eller biblioteket, og 3G-mobilnettverk, faller alle i denne kategorien.
+
+* *Single-hop, infrastructure-less.* I disse nettverkene er det ingen basestasjon som tilkoblet til det trådløse nettverket. Men som vi vil se, kan en av nodene i dette enkelthopp-nettverket imidlertid koordinere overføringene til de andre noder. Bluetooth-nettverk og 802.11-nettverk i ad hoc-modus er enkelthopp, infrastrukturfrie nettverk.
+
+* *Multi-hop, infrastructure-based.* I disse nettverkene er det en basestasjon til stede som er kablet til det større nettverket. Noen trådløse noder kan imidlertid måtte videresende kommunikasjonen via andre trådløse noder for å kunne kommunisere via basestasjonen. Noen trådløse sensornettverk og såkalte **trådløse nettverksnett (eng. wireless mesh networks)** faller i denne kategorien.
+
+* *Multi-hop, infrastructure-less.* Det er ingen basestasjon i disse nettverkene, og noder må kanskje videresende meldinger blant flere andre noder for å nå en destinasjon. Noder kan også være mobile, med tilkoblingsmuligheter mellom noder - en klasse av nettverk kjent som **mobile ad hoc-nettverk (MANETs)**. Hvis de mobile nodene er kjøretøy, er nettverket et **kjøretøy ad hoc-nettverk (VANET)**.
+
+
+I dette kapittelet vil vi for det meste begrense oss til *single-hop-nettverk, og deretter for det meste til infrastrukturbaserte nettverk*.
+
+
+### Wireless Links and Network Characteristics
+
+La oss begynne å se på et enkelt kablet nettverk, et hjemmenettverk, med en kablet Ethernet svits som kobler sammen vertene. Dersom vi erstatter det kablde Ethernettet med et trådløs 802.11 nettverk, et trådløs nettverksinterface ville erstattet vertens Ethernet-interface, men det ville ikke vært nødvendig med noen endringer på nettverkslaget eller over. Dette antyder at vi fokuserer vår oppmerksomhet på *linklaget* når vi ser etter viktige forskjeller mellom kablede og trådløse nettverk. Faktisk kan vi finne en rekke forskjeller mellom kablede og trådløse koblinger:
+
+* *Decreasing signal strength.* Elektromagnetisk stråling demper når den passerer gjennom materiell (for eksempel et radiosignal som går gjennom en vegg). Selv i ledig plass vil signalet spre seg, noe som resulterer i redusert signalstyrke (noen ganger referert til som **path loss**) når avstanden mellom avsender og mottaker øker.
+
+* *Interference from other sources.* Radiokilder som sender på samme frekvenbånd vil forstyrre hverandre. For eksempel overfører 2,4 GHz trådløse telefoner og 802.11b trådløse LAN på samme frekvensbånd. Dermed kan 802.11b trådløs LAN-brukeren som snakker på en 2,4 GHz trådløs telefon forvente at verken nettverket eller telefonen vil fungere spesielt godt. I tilegg kan det komme interferens fra andre overførende klder, elektromagnetisme i omenget (f.eks. nær motor, mikrobølgeovn). 
+
+* *Multipath propagation.* **Multipath propagation** oppstår når deler av den elektromagnetiske bølgen reflekterer gjenstander og bakken, og tar baner av forskjellige lengder mellom en avsender og en mottaker. Dette resulterer i uskarphet av mottatt signal ved mottakeren. Det å flytte objekter mellom avsender og mottaker kan føre til at multipath propagation endres over tid.
+
+
+La oss se på en vert som mottar et trådløst signal - verten mottar et elektromagnetisk signal som er en kombinasjon av en nedgradert form av det originale signalet sendt fra senderen og bakgrunnsstøy fra miljøet rundt. **Signal-to-noice ratioen (SNR)** er et relativt mål på styrken til det mottate signalet og denne støyen. SNR er vanligvis målt i enheter av desibel (dB). SNR målt i dB, er 20 ganger forholdet mellom 10-base-logaritmen av amplituden til det mottate signalet til lydens amplitude. For våre formal trenger vi bare å vite at en større SNR gjør det lettere for mottakeren å trekke ut det overførte signalet fra bakgrunnsstø. 
+
+Figur 6.3 under, viser **bit-error raten (BER)** - som grovt sett er sannsynligheten for at en overført bit som blir mottat har error hos mottakeren - versus SNR for tre forskjellige modelleringsteknikker for koding av informasjon for overføring. 
+
+
+![snrvsber](https://i.imgur.com/aD1bjs2.png)
+
+
+Figur 6.3 illustrerer flere fysisklag-karakteristikker som er viktige for å forstå høyerelags trådløse kommunikasjonsprotokoller:
+
+* *For en gitt moduleringsskjema, desto høyere SNR, desto lavere BER*. Siden en sender kan øke SNR-en ved å øke overføringskraften, kan senderen minske sannsynligheten for at en ramme som blir mottatt ved å øke overføringskraften.
+* *For en gitt SNR, en moduleringsteknikk med høyere bit-overføringsrate vil ha høyere BER*. I figuren har BPSK (1 Mbps) mindre BER enn QAM16 (4 Mbps), grunner overføringsraten.
+* *Dynamisk utvelgelse av fysikklagsmodulasjonsteknikken kan brukes til å tilpasse modulasjonsteknikken til kanalforhold.* SNR (og dermed BER) kan endres som følge av mobilitet eller på grunn av endringer i miljøet. Adaptiv modulering og koding brukes i celledatasystemer og i 802.11 WiFi og 3G-celledatametene som vi skal se på snart. Dette tillater for eksempel valget av en modulasjonsteknikk som gir den høyeste overføringshastigheten mulig underlagt en begrensning på BER, for gitt kanalegenskaper.
+
+
+En høyere og tidsvarierende bit-error rate er ikke det eneste forskjellen mellom kablede og trådløse koblinger. **Det skjulte terminalproblemet** - at fysiske objekter, f.eks. fjell, kan hindre overføringer - og **fading** - signalet blir svakere, og kan skje udetektbare kollisjoner - gjør at multiaccess i et trådløst nettverk betydelig mer komplekst enn i et kablet nettverk.
+
+
+### WiFi: 802.11 Wireless LANs
+
+Selvom mange teknologier og standarder for trådløse LANs ble utviklet på 1990-tallet, er det en spesifikk klasse av standarder som ble vinnerern: det **IEEE 802.11 trådløse LAN-et**, også kjent som **WiFi**. Vi skal å sepå 802.11 trådløse LANs, og se deres rammestruktur, medium aksessprotokoller, og internetworking av 802.11 LANs med kablet Ethernet LANs. 
+
+Det er flere 802.11 standarder gor trådløst LAN, inkludert 802.11b, 802.11a, 802.11g. Tabellen 6.1 viser hovedtrekkene ved disse standardene. 
+
+* De bruker alle samme mediums-aksessprotokoll, CSMA/CD (Carrier Sense Multi Access / Collision Detection). 
+* Alle har samme rammestruktur for linklagsrammene. 
+* Alle tre standarder har muligheter for  redusere overføringsraten for å kunne sende over større avstander. 
+* Alle standardene tillater både "infrastrukturmodus" og "ad hoc modus" 
+
+![IEEE802.11](https://i.imgur.com/gvbdaUo.png)
+
+En relativt ny WiFi-standard, 802.11n (2012) bruker multiple input multiple output (*MIMO*) antenner; med f.eks. to eller flere antenner på den sendende siden, og to eller flere antenner på den mottakende siden som overfører/mottar forskjellige signaler. Avhengig av moduleringskjemaet, kan overføringshastigheter på flere hundre megbits per sekund oppnås med 802.11n. 
+
+
+#### The 802.11 Architecture
+
+
+Figur 6.7 illustrerer hovedomponentene i 802.11 trådløse LAN arkitekturen. Fundamentalbyggeklossen til 802.11 arkitekturen er **basic service settet (BSS)**. En BSS inneholder en eller flere trådløse stasjoner og en sentral **basestasjon**, kjent som et **aksesspunkt (AP)** i 802.11 jargon. Figur 6.7 viser AP-en til hver av de to BSS-ene som kobler seg til en sammenkoblingsenhet (slik som en svitsj eller ruter) som igjen leder til internettet.
+
+![802.11arktitektur](https://i.imgur.com/PkwHYuJ.png)
+
+I et typisk hjemmenettverk er det en AP og en ruter (typisk integrert sammens som en enhet) som kobler BSS-en til internettet. 
+
+Som med Ethernet-enheter har 802.11 trådløse stasjoner en 6-byte MAC-adresse som er lagret i firmwaren til stasjonens adapter. Hver AP har også en MAC-adresse for sit trådløse interface. 
+
+Trådløse LANs som distribuerer AP-er, kalles ofte **infrastruktur trådløse LAN**, med "infrastrukturen" som AP-ene, sammen med den kablede Ethernet-infrastrukturen som forbinder AP og en ruter.
+
+Figur 6.8 viser at IEEE 802.11 stasjoner også kan gruppere dem selv sammen for å forme et ad hoc nettverk - et nettverk uten sentral kontroll og uten noen tilkobling til den "ytre verden". 
+
+![6.8](https://i.imgur.com/ZBQnHfd.png)
+
+
+##### Channels and Association
+
+Når en nettverksadministrator installerer en AP, vil administratoren tilegne ett en- eller to-ords **Service Set Identifier (SSID)** til aksesspunktet. Når man ser på *tilgjengelige nettverk* på Pcen så er det SSID-ene til alle AP-ene i området man ser. Administratoren må også velge kanalnummeret til AP-en. Fra Figur 6.1 husker vi at 802.11 opererer på et frekvensområde på 2.4 GHz til 2.485 GHz. Innenfor dette 85 MHz båndet har vi 11 delvis overlappende kanaler, som man må velge mellom. Med 11 Mbps for 802.11 på dette frekvensområdet, så vil en nettverksadministartor kunne oppnå 33 Mbps, ved å installere tre 802.11b AP-ere på samme sted, med tilegnede kanaler 1,6, og 11 til AP-ene, og koble disse sammen med en svitsj. 
+
+En **WiFi-jungel** er en fysisk plassering der en trådløs stasjon mottar et tilstrekkelig sterkt signal fra to eller flere AP-er. For eksempel, i mange kaféer i New York City, kan en trådløs stasjon hente et signal fra mange nærliggende AP-er. En av APene kan administreres av kafeen, mens de andre AP-ene kan være i boliger i nærheten av kafeen. Hver av disse AP-ene vil trolig være lokalisert i et annet IP-undernett og ville ha blitt tildelt en kanal,  uavhengig av hverandre.
+
+Anta nå at du kommer inn i en slik WiFi-jungel med din bærbare datamaskin, søker trådløs internettilgang. Anta at det er fem AP-er i WiFi-jungelen. For å få tilgang til Internett, må din trådløse stasjon være med i et av delnettene, og må derfor **knytte (eng. associate)** seg til nøyaktig én av AP-ene. Tilknytning betyr at den trådløse stasjonen oppretter en virtuell ledning mellom seg selv og AP-en. Spesielt vil kun den tilknyttede AP-en sende datarammer til din trådløse stasjon, og den trådløse stasjonen vil sende datarammer til Internett bare gjennom den tilhørende AP-en. Men hvordan forbinder din trådløse stasjon med en bestemt AP? Og mer fundamentalt, hvordan vet din trådløse stasjon hvilke AP-en, hvis noen, er der ute i jungelen?
+
+
+* 802.11-standarden krever at en AP regelmessig sender **beacon frames**, som hver inneholder APs SSID og MAC-adresse. Din trådløse stasjon, som vet at APer sender ut beaconrammer, skanner de 11 kanalene, søker beaconrammer fra noen AP'er som kan være der ute. Etter at du har lært om tilgjengelige APer fra *beacon frames*, velger du (eller din trådløse vert) en av APene for tilknytning.
+* Det er ingen bestemt algoritme for å bestemme hvilken av de tilgjengelige AP-ene som man skal knytte seg til. Typisk er det verten som velger AP-en som leverer de beacon-rammene med høyest signal. 
+
+Prosessen av å skanne kanaler og høre etter beaconrammer er kjent som **passiv skanning** (Figur 6.9a). En trådløs vert kan også utføre **aktiv skanning**, ved å kringkaste en *sonderamme (eng. probe frame)* som blir mottatt av alle AP-ene innenfor vertens rekkevidde, som vist i figur 6.9b. AP-er reagerer på sondeforespørselsrammen med en sondresponsramme. Den trådløse verten kan deretter velge AP som skal tilknyttes blant de responterende AP-ene.
+
+![6.9](https://i.imgur.com/XZk5tCE.png)
+
+Etter å ha valgt en AP som man skal knytte seg med, vil den trådløse verten sende en assosiasjons-request-ramme til AP-en, og AP-en responderer med en assosiasjons-response-ramme. Noter at denne andre request-response handshaken er nødvendig med aktiv skanning, da AP-en som svarer på probe-requesten ikke vet hvilke av de (potensielt mange) responderende AP-ene verten vil ønske å koble seg til. 
+
+For å kunne etablere assosiasjon til en bestemt AP, kan det hende at den trådløse stasjonen er nødt til autentisere seg selv. En av måtene, som brukes av mange selskaper, er å gi tilgang basert på en stasjons MAC-adresse. En annen måte som brukt på cafeer eller lignende er å bruke brukernavn og passord. 
+
+
+#### The 802.11 MAC Protocol
+
+Ettersom flere stasjoner vil kunne ønske å overføre datarammer på samme tid, over samme kanal, trengs det en multiaksessprotokoll for å koordinere disse overføringene. En **stasjon**, er verken en trådløs stasjon eller en AP. 
+
+* Som diskutert i kapittel 5 er det generelt tre klasser med multiaksessprotokoller: channel partitioning (inkludert CDMA), random access og taking turns. Inspirert av den store suksessen til Ethernet og protokollen for random access, valgte designerne av 802.11 en random access-protokoll for 802.11 trådløse LAN. 
+* Denne tilfeldige tilgangsprotokollen refereres til som **CSMA med kollisjonsungåelse**, eller mer kortfattet som **CSMA/CA**. Som med Ethernet's CSMA / CD, står "CSMA" i CSMA / CA for "carrier sense multiple access", noe som betyr at hver stasjon skjekker kanalen før sending, og lar vær å sende når kanalen oppfattes opptatt. Selv om både Ethernet og 802.11 bruker carrier-sensing random access, har de to MAC-protokollene viktige forskjeller.
+
+
+
+For det første, i stedet for å bruke kollisjonsdeteksjon, bruker 802.11 *kollisjonsunngåelsesteknikker*. For det andre, på grunn av de relativt høye bitfeilratene for trådløse kanaler, bruker 802.11 (i motsetning til Ethernet) en linklagsbekreftelse/-overføring (Automatic ReQuest - ARQ) -skjema. Vi vil beskrive 802.11s kollisjonsunngåelse og linklagsbekreftelses-skjemaer nedenfor.
+
+Husk fra Kap. 5 at med Ethernet's kollisionsdetekteringsalgoritme, lytter en Ethernet-stasjon til kanalen som den overfører over. Dersom den registrerer at en annen stasjon også overfører, stopper den sin overføring og forsøker å overføre igjen etter å ha ventet en liten, tilfeldig tid. I motsetning til 802.3 Ethernet-protokollen implementerer 802.11 MAC-protokollen ikke kollisjonsdeteksjon. Det er to viktige årsaker til dette: 
+
+* Muligheten for å detektere kollisjoner avhenger av muligheten for å sende (stasjonens signal) og motta (for å bestemme om en anne stasjon også sender).
+	* 	På grunn av at astyrkettil det mottatte signalet er typisk veldig lite i forhold til det sendte signalet, er det veldig dyrt å lage maskinvare som kan detektere kollisjoner.	
+* Selv om adapteren kunne ha overført og lyttet samtidig (og antagelig stoppe  overføringen når den registrerer en opptatt kanal), vil adapteren fortsatt ikke kunne oppdage alle kollisjoner på grunn av det skjulte terminalproblemet og fading. 
+
+Fordi 802.11-trådløse LAN ikke bruker kollisjonsdeteksjon, så blir det slik at når en stasjon begynner å overføre en ramme, *sender den rammen i sin helhet*. Som det kan forventes, kan overføring av hele rammer (spesielt lange rammer) når kollisjoner er utbredt, senke ytelsen til en multiaksessprotokoll. For å redusere sannsynligheten for kollisjoner, bruker 802.11 flere kollisjonsunngåelsesteknikker, som vi snart skal diskutere.
+
+
+La oss undersøke 802.11s **linklags acknowledgment-skjema**. Som vi snakket om i stad er det ikke sikkert at en ramme kommer frem til destinasjonen sin. For å håndtere denne betydelige risikoen for feil, bruker 802.11 MAC-protokollen *koblingslagsbekreftelser*. Som vist i Figur 6.10, når mottaksstasjonen mottar en ramme som passerer CRC, venter den en kort tidsperiode kjent som **Short Inter-Frame Spacing (SIFS)** og sender deretter tilbake en bekreftelsesramme. Hvis sendestasjonen ikke mottar en bekreftelse innen en gitt tid, forutsetter det at en feil har oppstått og re-sender rammen, ved hjelp av CSMA / CA-protokollen for å få tilgang til kanalen. Hvis en bekreftelse ikke mottas etter et bestemt antall re-sendinger, gir senderstasjonen opp og kasserer rammen.
+
+Etter å ha diskutert hvordan 802.11 bruker linklagsbekreftelser, er vi nå i stand til å beskrive 802.11 CSMA/CA-protokollen. Anta at en stasjon (trådløs stasjon eller en AP) har en ramme klar for overføring:
+
+1. Dersom stasjonen merker at kanalen er på tomgang, sender den rammen sin etter en kort periode kjent som **Distributed Inter-Frame Space (DIFS)**, se Figur 6.10.
+2. Hvis ikke, vil stasjonen bestemme en tilfeldig backoff-verdi ved å bruke binær eksponentiell backoff, og telle den denne verdien når kanalen oppfattes å være ledig. Når kanalen oppfattes opptatt, vil tellerverdien forbli den samme.
+3. Når nedtelleren når null, vil stasjonen overføre hele rammen, og venter for en bekreftelse.
+4. Dersom en acknowledgement blir mottatk, vet den sendende stasjonen at rammen har blitt mottat korrekt. Dersom den har en annen ramme å sende begynner CSMA/CA-protokollen på steg 2. Dersom det ikke kommer noen acknowlegdement, vil den overførende stasjonen gå tilbake til backoff-fasen i steg 2, med et tilfeldig tall valgt fra et større intervall. 
+
+
+![6.10](https://i.imgur.com/NtoCbeR.png)
+
+
+Husk at under Ethernets CSMA / CD, flere tilgangsprotokoller (Seksjon 5.3.2), begynner en stasjon å overføre så snart kanalen blir oppdaget ledig. Med CSMA / CA, venter stasjonen imidlertid fra å sende mens den teller ned, selv når den registrerer at kanalen er tomgang. Hvorfor tar CSMA / CD og CDMA / CA slike forskjellige tilnærminger her?
+
+* Dersom to stasjoner ønsker å sende en ramme, og en tredje stasjon overfører en ramme. Vil begge stasjonene sende over pakkene sine når den tredje stasjonen er ferdig med overføre. Som vil resultere i en kollisjon. Men målet med 802.11 er å unngå kollisjoner når det er mulig. Når de to stasjonene oppdager at kanalen er opptatt, går de inn i random backoff, og dersom de velger forskjellige backoff-verdier, vil den ene først starte/vinne, og den andre sin nedteller fryses, og forsetter når den andre stasjonen er ferdig. Kollisjoner kan fortsatt skje da det kan være skjulte terminaler.
+
+
+##### Dealing with Hidden Terminals: RTS and CTS
+
+802.11 MAC-protokollen inneholder også en nifty (men valgfri) reservasjonssystem som hjelper til med å unngå kollisjoner selv i nærvær av skjulte terminaler. La oss undersøke denne ordningen i sammenheng med figur 6.11, som viser to trådløse stasjoner og ett tilgangspunkt. Begge trådløse stasjonene ligger innenfor AP-området (hvis dekning vises som en skyggelagt sirkel) og begge har tilknytning til AP. På grunn av fading er signalområdet for trådløse stasjoner imidlertid begrenset til interiøret i de skraverte kretsene vist i figur 6.11. Dermed er hver av de trådløse stasjonene skjult fra den andre, selv om ingen er skjult fra AP.
+
+Dersom H1 skulle sende en pakke, og halvveis gjennom denne overføringen, så sender også H2 (som ikke registrerer H1s overføring), da vil det skje en kollisjon. Kanalen vil derfor være forkastet under hele H1s og H2s overføring. 
+
+For å unngå dette så tilatter IEEE 802.11 protokollen stasjonen å bruke en kort **Request to Send (RTS)** kontrollramme, og en kort **Clear to Send (CTS)** kontrollramme for å reservere aksesen til kanalen. Når en sender ønsker å sende en dataramme, kan den først sende en RTS ramme til AP-en, og indikerer den totale tiden nødvendig for å overføre datarammen og ACK-rammen. Når AP-en mottar denne RST-rammen, responderer den ved å kringkaste en CTS-ramme. Denne CTS-rammen har to funksjoner: Å gi sender eksplisitt tillatelse for å sende, og for å instruere andre stasjoner til å ikke sende under den reserverte tiden. 
+
+![6.12](https://i.imgur.com/AedzU5B.png)
+
+**Bruken av RTS og CTS rammer kan øke ytelsen på to måter:**
+
+* Det skjulte stasjonsproblemet blir redusert, siden en lang data-ramme bare overføres etter at kanalen er reservert.
+* Fordi RTS- og CTS-rammene er korte, varer en kollisjon med en RTS- eller CTS-ramme bare i løpet av den korte RTS- eller CTS-rammen. Når RTS- og CTS-rammene er riktig overført, bør følgende DATA- og ACK-rammer overføres uten kollisjoner. 
+
+> Selvom RTS/CTS kan hjelpe å redusere kollisjoner introduserer den også forsinkelser og bruker kanalresursser.
+> 
+> Derfor brukes RTS/CTS kun for å reservere kanalen for overføring av lange data-rammer. 
+
+
+##### Using 802.11 as a Point-to-Point Link
+
+Vår diskusjon har hittil kun fokusert på 802.11 på en multiaksess måte. Det er verdt å nevne at dersom to noder har retningsantenner, som de peker mot hverandre, og kjører 802.11 protokollen over det som essensielt er en punkt-til-punkt-kobling. Gitt den lave prisen på 802.11-maskinvare, kan bruk av retningsantenner og en økt overføringseffekt tillate 802.11 å bli brukt som et rimelig middel for å gi trådløse punkt-til-punkt-tilkoblinger over ti kilometer unna.
+
+
+#### The IEEE 802.11 Frame
+
+Selvom 802.11 rammen deler mange likheter med en Ethernetramme, så har den også et antall felt som er spesifikk for sin bruk for trådløse koblinger. 802.11 rammen er vist i Figur 6.13. Nummerene over hvert felt i rammen representerer lengden til feltet i *bytes*, tallet over subfeltene er i *bits*. 
+
+
+![802.11-frame](https://i.imgur.com/O58fMdv.png)
+
+**Payload and CRC field:** 
+
+I hjertet til rammen, er payloaden, som typisk består av et IP-datagram eller en ARP-pakke. Selvom feltet er tillat å være så langt som 2,312 bytes, er det typisk mindre enn 1,500 bytes. Som med en Ethernet-ramme, så inkluderer en 802.11-ramme en 32.bit cyclic redundancy check (CRC) slik at mottaker kan bitfeil. Som vi har sett er det mye mer vanlig med bitfel i trådløse LAN enn i kablede LAN, så her er CRC enda mer nyttefullt
+
+**Address field:**
+
+802.11-rammen har *fire* adressefelt, der hver av dem inneholder en 6-byte MAC-adresse. Men hvorfor fire felt? La oss først se på de tre første adressefeltene:
+
+*	Adresse 2 er MAC-adressen til stasjonen som sender rammen.
+* Adresse 1 er MAC-adressen til den trådløse stasjonen som skal motta rammen.
+* Adresse 3 er MAC-adressen til ruter-interfacet. Denne adressen brukes når svitsjen (AP-en) skal lage en Ethernet-ramme og sende til ruteren med interface med MAC-adresse lik adresse 3. 
+
+**Sequence Number, Duration, and Frame Control Fields:**
+
+Når en stasjon mottar en ramme fra en annen stasjon og sender tilbake en acknowledgement, kan denne ACK-en gå tapt kan det hende man å sende flere kopier av en gitt ramme. Bruken av sekvensnummere tillater mottaker å skille mellom nye pakker og re-sendinger av gamle pakker. Sekvensnummer-feltet har derfor samme funksjon her på linklaget som i transportlaget i Kap. 3. 
+
+Husk at 802.11-protokollen tillater en overføringsstasjon å reservere kanalen i en tidsperiode som inkluderer tiden for å overføre datastammen og tiden til å overføre en bekreftelse. Denne varighetsverdien er inkludert i rammens *duration-felt* (både for datarammer og for RTS- og CTS-rammene).
+
+Som vist i figur 6.13, inneholder rammekontrollfeltet mange delfelter. Vi sier bare noen få ord om noen av de viktigste delområdene; Feltypene og undertypefeltene brukes til å skille sammen assosiasjoner, RTS, CTS, ACK og datarammer. Feltene til og fra brukes til å definere betydningen av de forskjellige adressefeltene. (Disse betydningen endres avhengig av om ad hoc eller infrastrukturmodus brukes, og i tilfelle infrastrukturmodus, om en trådløs stasjon eller en AP sender rammen.) Endelig angir WEP-feltet om kryptering blir brukt eller ikke.
+
+
+#### Mobility in the Same IP Subnet
+
+For å kunne øke den fysiske rekkevidden til et trådløst LAN, bruker selskaper og universiteter ofte flere BSS innenfor samme IP-subnet. Dette øker naturligvis spørsmålet om mobilitet blant BSS-er - hvordan beveger trådløse stasjoner sømløst fra en BSS til en annen mens du opprettholder pågående TCP-økt? 
+
+Som vi ser i dette underavsnittet, kan mobilitet håndteres på en relativt enkel måte når BSS-ene er en del av subnettet. Når stasjoner flytter mellom subnett, vil det være behov for mer sofistikerte mobilitetshåndteringsprotokoller. 
+
+
+* La oss se på et eksempel på mobilitet med mellom BSS-er i samme subnett. Figur 6.15 viser to sammenkoblede BSS-er med en vert, H1, som beveger seg fra BSS1 til BSS2. Fordi i dette eksempelet er sammenkoblingsenheten som forbinder de to BSS-ene ikke en ruter, og dermed tilhører alle stasjonene i de to BSS-ene, inkludert AP, samme IP-subnett. 
+* Når H1 beveger seg fra BSS1 til BSS2, kan det dermed beholde sin IP-adresse og alle dens pågående TCP-tilkoblinger. Hvis samtrafikkinnretningen var en ruter, ville H1 måtte ha skaffet seg en ny IP-adresse i subnettverket til der den beveget seg. Denne adresseendringen ville forstyrre eventuelle pågående TCP-tilkoblinger på H1. 
+
+![mobilitetisammesubnet](https://i.imgur.com/1Qmvxsk.png)
+
+
+**Men hva skjer når H1 beveger seg fra BSS1 til BSS2?**
+
+* Da H1 vandrer bort fra AP1, oppdager H1 et svekkelsessignal fra AP1 og begynner å skanne etter et sterkere signal. H1 mottar beaconrammer fra AP2 (som i mange institusjoner og universitetsinnstillinger vil ha samme SSID som AP1). H1 disassocierer deretter med AP1 og forbinder med AP2, mens du beholder sin IP-adresse og opprettholder sine pågående TCP-økter.
+
+* Dette tar opp håndoff-problemet fra verts- og AP-visningspunktet. Men hva med svitjsen i figur 6.15? Hvordan vet det at verten har flyttet fra en AP til en annen? Som du kanskje husker fra kapittel 5, er svitjser "self learning" og bygger automatisk forwardingtabellene sine. Denne selvlærende funksjonen håndterer flyttinger av og til. Svitjser ble imidlertid ikke designet for å støtte svært mobile brukere som vil opprettholde TCP-tilkoblinger mens de beveger seg mellom BSS. 
+
+* Husk at før flyttingen har svitjsen en oppføring i videresendingstabellen som parrer H1s MAC-adresse med det utgående svitsj-interfacet som går til H1. Dersom H1 først er i BSS1, blir et datagram adressert til H1 rettet til H1 via AP1. Når H1 binder assosierer seg med BSS2, må rammene dens imidlertid rettes til AP2. 
+
+* En **løsning** er for AP2 å sende en **kringkasting Ethernet-ramme med H1s kildeadresse** til svitsjen like etter den nye foreningen. Når svitjsen mottar rammen, oppdaterer den forwardingtabellen, slik at H1 nås via AP2.
+
+
+#### Advanced Features in 802.11
+
+Vi gjør oss ferdig med 802.11 med en kort diskusjon om to avanserte egenskaper som finnes i 802.11-nettverk. Som vi vil se, er disse egenskapene ikke helt angitt i 802.11-standarden, men gjøres mulig av mekanismer spesifisert i standarden.
+
+###### 802.11 Rate Adaption
+
+Som vi se er det forskjellige moduleringsteknikker (med forskjellige overføringsrater som de tilbyr), som passer til forskjellige SNR-scenarioer. 
+
+Tenk for eksempel en mobil (*adj.*) 802.11-bruker som i utgangspunktet er 20 meter fra basestasjonen, med et høyt signal-støyforhold. På grunn av den høye SNR-en, kan brukeren kommunisere med basestasjonen ved hjelp av en fysisk lagmodulasjonsteknikk som gir høye overføringshastigheter, samtidig som man opprettholder en lav BER. Dette er en lykkelig bruker! Anta nå at brukeren blir mobil, går bort fra basestasjonen, med SNR faller når avstanden fra basestasjonen øker. I dette tilfellet, hvis moduleringsteknikken som brukes i 802.11-protokollen som opererer mellom basestasjonen og brukeren, ikke endres, vil BER bli uakseptabelt høy da SNR reduseres, og til slutt vil ingen sendte rammer bli mottatt riktig.
+
+Av denne grunn har noen 802.11 implementeringer en **rate adaptsjons evne** som adaptivt velger den underliggende fysiske lag moduleringsteknikken som skal brukes, basert på nåværende eller nylige kanalegenskaper. 
+
+* Hvis en node sender to bilder på rad uten å motta en bekreftelse (en implisitt indikasjon på bitfeil på kanalen), faller overføringshastigheten tilbake til neste lavere frekvens. Hvis 10 rammer på rad er bekreftet, eller hvis en tidtaker som sporer tiden siden siste fallback utløper, øker overføringshastigheten til neste høyere hastighet. 
+
+* 802.11 rate adaption, og TCP congestion control, ligner det lille barnet som kontinuerlig maser foreldrene sine for mer og mer godteri til foreldrene endelig sier "Nok!" Og barnet rygger av (bare for å prøve igjen senere etter at forholdene forhåpentligvis har blitt bedre!). Det er også foreslått en rekke andre ordninger for å forbedre denne grunnleggende automatiske kursjusteringsordningen.
+
+
+###### Power Management
+
+Strøm er en verdifull ressurs i mobile enheter, og 802.11-standarden gir dermed strømstyringsfunksjoner som tillater 802.11 noder å minimere mengden tid som deres sense-, transmit- og receive- funksjoner og andre kretser må være *på*. 802.11 strømstyring fungerer som følger. En node kan eksplisitt skifte mellom *sove* og *våkne* tilstander. En node indikerer til AP-en at den skal gå i dvale ved å sette strømstyringsbiten i toppteksten til en 802.11-ramme til 1. En tidsur i noden settes deretter til å våkne noden like før AP er planlagt å sende sin beacon-ramme Siden AP vet fra den angitte strømstyringsbiten at noden skal sove, vet den at den ikke skal sende noen rammer til den noden, og vil buffere rammer som er bestemt for sovende vert for senere overføring.
+En knute vil våkne like før AP sender en fyrramme og går raskt inn i fullt aktiv tilstand.                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                    
+
+
+
+### Cellular Internet Access
+
+I det forrige avsnittet undersøkte vi hvordan en Internett-vert kan få tilgang til Internett når de befinner seg i et WiFi-hotspot, det vil si når det er i nærheten av et 802.11-tilgangspunkt. Men de fleste WiFi-hotspots har et lite dekningsområde på mellom 10 og 100 meter i diameter. Hva gjør vi da når vi har et desperat behov for trådløs internettilgang, og vi kan ikke få tilgang til en WiFi-hotspot?
+
+Gitt at mobiltelefoni nå er allestedsnærværende i mange områder over hele verden, er en naturlig strategi å utvide mobilnett, slik at de ikke bare støtter taletelefoni, men også trådløs internettilgang. Ideelt sett vil denne Internett-tilgangen være med en rimelig høy hastighet og vil sørge for sømløs mobilitet, som lar brukere beholde TCP-tilkoblingene sine når de er ute å reiser. 
+
+
+#### An Overview of Cellular Network Architecture
+
+I vår beskrivelse av mobilnettverksarkitektur i denne delen, adopterer vi terminologien til *Global System for Mobile Communications* **(GSM)** standarder. På 1980-tallet anerkjente europeerne behovet for et pan-Europeisk digitalt mobiltelefonielt system som ville erstatte de mange inkompatible analoge celletelefonisystemene, som fører til GSM-standarden. Europeere distribuerte GSM-teknologi med stor suksess i begynnelsen av 1990-tallet, og siden da har GSM vokst til å være sjefen av mobiltelefon-verden, med over 80% av alle mobilabonnenter verden over bruker GSM.
+
+Når man snakker om mobilnettverk, klassifiserer man teknologien gjerne i en av flere "generasjoner". Den første generasjonen var designet primært for samtale-trafikk. 
+
+* Første generasjon (1G) systemer  var analoge med FDMA systemer designet ekslusivt for voice-only kommunikasjon. Disse systemene fnnes ikke idag, og har blitt erstattet av digitale 2G systemer. 
+
+* Det originale 2G systemetble også designet som en voice-tjeneste, men ble senere utvidet (2.5G) til å støtte data (f.eks. internettet) i tilegg til voice-tjeneste. 
+
+* 3G-systemene som er i dag, støtter også tale og data, men med stadig større vekt på datakompetanse og høyhastighets radio-aksesslinker.
+
+
+##### Cellular Network Architecture, 2G: Voice Connections to the Telephone Network
+
+Begrepet *cellular* refererer til det faktum at regionen som dekkes av et mobilnettet er delt opp i et antall geografiske dekningsområder, kjent som celler, vist som heksagoner på venstre side av figur 6.18. 
+
+Som med 802.11 WiFi-standarden som vi studerte i avsnitt 6.3.1, har GSM sin egen spesifikke terminologi. Hver celle inneholder en **base transceiver station (BTS)** som overfører signaler til og mottar signaler fra de mobile stasjonene i sin celle. Dekningsområdet for en celle avhenger av mange faktorer, inkludert overføringsfaktoren til *BTS*, overføringseffekten til brukerenhetene, hindrende bygninger i cellen og høyden på basestasjonantenna. 
+
+Selv om figur 6.18 viser hver celle som inneholder en basestasjonssender som ligger midt i cellen, plasserer mange systemer i dag BTS-er i hjørner hvor tre celler krysser, slik at en enkelt BTS med retningsantenner kan betjene tre celler.
+
+![6.18](https://i.imgur.com/Ps8sDun.png)
+
+GSM-standarden for 2G-cellesystemer bruker kombinert FDM / TDM for luftgrensesnittet. Husk at med ren *FDM* er kanalen delt inn i en rekke frekvensbånd med hvert bånd som er viet til en samtale. Husk også at med ren *TDM*, er tiden delt inn i rammer med hver ramme videre partisjonert i slots og hver samtale blir tildelt bruken av en bestemt slot i den roterende rammen. I kombinert FDM / TDM-system blir kanalen delt inn i en rekke frekvensundergrupper. I hvert underfrekvensbånd blir tiden delt inn i rammer og spor.
+
+
+* GSM-nettverkets **basestasjonskontroller (BSC)** vil typisk betjene flere titalls basestasjoner. BSCs rolle er å allokere BTS-radiokanaler til mobilabonnenter, utføre paging - dvs. finne cellen der mobilen befinner seg - og utføre overføring av mobilbrukere.
+
+* **Mobile switching center-et (MSC)** spiller en sentrale rollen i brukerautentisering og *accounting* (f.eks. bestemme om en mobil skal få kunne koble seg til mobilnettverket), samtaleetablering, samtale-teardown, og handoff (overføring av mobilbrukere)
+
+
+
+##### 3G Cellular Data Networks: Extending the Internet to Cellular Subscribers
+
+Nå som vi er i farta, ønsker vi også å lese epost, bruke internettet, få lokasjonsavhengige tjenester (Maps og TripAdvisor) eller streame video. For å gjøre dette må telefonen kjøre på full TCP/IP-protokol stakk (inkludert fysisk, kobling, nettverk, transport og applikasjonslagene), og koble seg på Internettet via mobilnettverket.
+
+Nedenfor fokuserer vi på UMTS (Universal Mobile Telecommunications Service) 3G-standarder utviklet av 3. Generation Partnership-prosjektet
+
+
+**3G Core Network:**
+
+3G-core-mobildatanettverket forbinder radioaksessnettverk til det offentlige Internettet. Kjernenettverket samarbeider med komponenter i det eksisterende mobilnettverket (spesielt *MSC*). På grunn av den betydelige mengden eksisterende infrastruktur i det eksisterende mobilnettverket, er tilnærmingen tatt av designere av 3G-datatjenester klar: *la det eksisterende kjerne GSM-mobilnettet være uberørt, og legg til flere parallelle datafunksjoner i parallell til det eksisterende mobilnettverket. *
+
+Alternativet - Integrering av nye datatjenester direkte inn i kjernen i det eksisterende mobilnettverket - ville ha hevet de samme utfordringene som oppstod i Kap.4, hvor vi diskutert integrering av nye (IPv6) og arv (IPv4) teknologier på Internett.
+
+
+Det er to typer noder i 3G-kjernenettverket: **Serving GPRS Support Nodes (SGSNs)** og **Gateway GPRS Support Nodes (GGSNs)**. (GPRS står for Generalized Packet Radio Service, en tidlig datatjeneste i 2G-nettverk, her diskuteres den utviklede versjonen av GPRS i 3G-nettverk). 
+
+* En *SGSN* er ansvarlig for å levere datagrammer til/fra de mobile nodene i radioaksessnettet som SGSN er tilknyttet. SGSN samhandler med mobilkommunikasjonsnettverkets MSC for dette området, og gir brukerautorisasjon og overføring, opprettholder lokasjons(celle)informasjon om aktive mobile noder og utfører datagram-videresending mellom mobile noder i radionettighetsnettverket og en GGSN. 
+
+* En *GGSN* fungerer som en gateway, som forbinder flere SGSNs med det større Internett. En GGSN er således det siste stykket 3G-infrastruktur som et datagram med opprinnelse på en mobil node møter før den kommer inn i det større Internett. Til omverdenen ser GGSN ut som hvilken som helst annen gatewayrouter; Mobiliteten til 3G-nodene i GGSNs nettverk er skjult fra omverdenen bak GGSN.
+
+![3GNetwork](https://i.imgur.com/GrQ87z9.png)
+
+
+**3G Radio Access Network: The Wireless Edge:**
+
+3G **radioaksessnettverket** er det trådløse first-hop nettverket som vi ser som en 3G-bruker. **Radio Network Controlleren (RNC)** kontrollerer typisk flere *"cell base transceiver (en enhet som kan motta og sende) stations"* likt basestasjonene vi så i 2G-systemer. Hver celles trådløse kobling opererer mellom mobilde noder og en base-tranceiver-stasjon, slik som i 2G-nettverk.
+
+RNC-en sammenkobler både det kretskoblede mobilnettet via en MSC, og til det pakkesvitsjede Internettet via en SGSN. Selvom 3G-mobiltelefoni- og mobildatatjenester bruker forskjellige kjernenettverk, deler de et fellst første/siste-hop radioaksessnettverk.
+
+En betydlig endrng i 3G UMTS (mer definert navn for 3G) over 2G-nettverk er at istedet for å bruke GSM sin FDMA/TDMA skjema, bruker UMTS en CDMA teknikk kalt Direct Sequence Wideband CDMA inni TDMA slots. Denne endringen krever et nytt 3G-mobilnettverk som fungerer parallelt med 2G BSS-radionettverket vist i figur 6.19.
+
+
+
+#### On to 4G: LTE
+
+Med 3G systemene kjørende over hele verden, kommer 4G-systemene. **4G Long-Term Evolution (LTE)** standarden lagt fram av 3GPP har to viktige innovasjoner over 3G systemer:
+
+* **Evolved Packed Core (EPC).** EPC-en er forenklet all-IP kjernenettverk som forener det separate kretsomkoblede voice-telefonnettverket og det pakkedrevne mobilnettverket vist i figur 6.19. Det er et "all-IP-nettverk" ved at både tale og data vil bli levert i IP-datagrammer. Som vi har sett i Kap. 4 og senere i Kap. 7 er IPs "best effort" tjenestemodell ikke iboende velegnet for de strenge ytelseskravene for *Voice-over-IP-trafikk (VoIP)* med mindre nettverksressurser klarer å unngå (istedet for å reagere på) overbelastning.
+
+	Derfor er en sentral oppgave for EPC å administerere/styre nettverksressurser til å levere denne høye kvaliteten på tjenesten. EPC gjør også en klar separasjon mellom nettverkskontroll- og brukerdataplanene, med mange av mobilitetsstøttefunksjonr. EPC tillater flere typer radio-tilgangsnettverk, inkludert eldre 2G- og 3G-radionettverk, for å knytte seg til kjernenettverket.
+	
+* **LTE Radio Access Network.** LTE bruker en kombinasjon av frekvensdelings-multipleksing og tidsdelings-multipleksing på nedstrømskanalen, kjent som ortogonal frekvensdelings-multipleksing (OFDM). I LTE er hver aktive mobile node allokert en eller flere 0.5 ms tidsslots i en eller flere kanalfrekvenser. Ved å bli allokert økende flere tidsslots (enten på samme eller forskjellige frekvenser) kan den mobile noden være i stand til å oppnå høyere overføringshastigheter.
+
+	Slot (re)allokering blant mobile noder kan bli gjort så ofte som hver millisekund. Forskjellige moduleringsskjemaer kan også bli brukt for å ende overføringshastigheten. LTE radionettverk bruker multiple-input, multiple output (MIMO) antenner. Den maksimale dataraten for en LTE-bruker er 100 Mbps nedstrøms og 50 Mbps oppstrøms, når man bruker 20 MHz båndbredde.
+	
+	Den spesielle allokering av tidsluker til mobile noder er ikke bestemt av LTE-standarden. I stedet vil avgjørelsen av hvilke mobile noder vil få lov til å overføre i et gitt tidsluke på en gitt frekvens bestemmes av *schedule algorithm* som tilbys av LTE-utstyrsleverandøren og/eller nettverksoperatøren. I tillegg kan brukerprioriteringer og kontrakterte servicenivåer (for eksempel sølv, gull eller platina) brukes til å planlegge nedstrøms pakkeoverføringer. I tillegg til LTE-funksjonene beskrevet ovenfor, tillater LTE-Advanced nedstrømsbåndbredder på hundrevis av Mbps ved å allokere aggregerte kanaler til en mobil node.
+	En annen 4G trådløs teknologi er WiMax, som er fra Japan. 
+	
+	
+![4g](https://i.imgur.com/KKVjZlq.png)
+
+<br></br>
+<a name="kap7"></a>
+## Kapittel 7 - Multimedia Networking
+
+
+Vi kan starte kapittelet med litt systematikken til multimediapplikasjoner nå i første avsnitt. Vi skal se at multimediaapplikasjoner kan bli klassifisert so enten *streaming stored audio/video, conversational voice/video-over-IP*, eller *streaming live audio/video.* Vi skal se at hver av disse applikasjonsklassene har sine egne unike servicekrav som avviker vesentlig fra tradisjonelle elastiske applikasjoner som e-post, nettlesing og ekstern pålogging. I avsnitt 7.2, undersøker vi video streaming i detalj. 
+
+
+### Multimedia Networking Applications
+
+Vi defingerer en multimedianettverksapplikasjon som enhver nettverksapplikasjon som tilbyr lyd eller video. 
+
+
+#### Properties of Video
+Den kanskje viktige egenskapen til video er dens **høye bit rate**. Videodistribusjon over internettet er typisk på 100kbps for lavkvalitetsvideokonferanse til over 3 Mbps for å stream høykvalitetsfilmer.
+
+For å skjønne hvordan video-båndbreddekrav er i forhold til andre forskjellige Internettapplikasjoner. La oss anta at Frank er på Facebook og ser på et nytt bilde hvert 10 sekund, og at hvert bilde er 200 Kbytes (antar for enkelhetsskyld at 1Kbyte = 8000 bits). Antar også at Martha har hørt på mange MP3 sanger, med en rate på 128 kbps, og Victor som ser på video som har blitt kodet med en rate på 2 Mbps. I tabell 7.1 sammenliknes disse tre handlingene, der vi antar at hver session har vart i 67 minutter. 
+
+![7.1](https://i.imgur.com/RdiQ6rv.png)
+
+Vi ser at videostreaming bruker desidert mest båndbredde, med en bitrate på mer enn ti ganger mer enn musikkapplikasjonenen. Gitt populæriteten til video og dens høye bitrate er det ikke rart at Cisco tipper at streaming og lagring av video vil ta bruke 90% av den globale internetttrafikken. 
+
+En annen viktig egenskap til video er at den kan bli komprimenrt, og dermed bytte kvalitet med bitrate. En video er en sekvens av bilder, og blir vist med en konstant rate, f.eks. 24 eller 30 bilder i sekundet. En ukomprimert, digitalt kodet bilde består av en liste med piksler. Det er to typer av redundans i video, som kan bli utnyttet av **video komprimering**. 
+
+* *Spatial redudancy* (*nor. romlig redundans*) er redundansen innenfor et gitt bilde. Intuitivt, et bilde som for det meste består av hvite plasser har en høy grad av redundans og kan komprimeres effektivt uten å gi en vesentlig oppussing av bildekvaliteten.
+* *Temporal redudancy* (*nor. tidsredudans*) refleketerer repitisjon fra et bilde til det etterfølgende bilde. Dersom et bilde og det etterfølgende bildet er identiske, er det ikke noe poeng å re-kode det etterfølgende bildet. Da er det mer effektivt å indikere i encodingen at det etterfølgende bildet er det samme. 
+
+Vi kan også bruke kompresjon for å lage *flere versjoner** av samme video, alle på forskjellige kvalitetsnivåer. For eksempel kan vi bruke kompresjon for å lage tre versjoner av samme video, med ratene 300 kbps, 1 Mbps og 3 Mbps, så kan man la brukere bestemme hvilken versjon de vil se med den tilgjengelige båndbredden.
+
+#### Properties of Audio
+
+Digital lyd har veldig mye lavere båndbreddekrav enn video. Digital lyd har sine egne unike egenskaper som må bli tatt hensyn til når man designer multimedianettverksapplikasjoner. For å forstå disse egenskapene, la oss se på hvordan man analog lyd til digital lyd:
+
+* Det ananloge lydsignalet blir samplet på en gitt rate, f.eks. 8,000 samples per sekund. Verdien til hver sample er et vilkåerlig reellt tall. 
+* Hver av disse samplene blir avrudet til et endelig antall av verdier. Denne operasjonen kalles **kvantisering**. Tallet for slike endelige verdier, kalt kvantiseringsverdier, er typisk en opphøyning av to, for eksempel 256 kvantiseringsverdier.
+* Hver av disse kvantiseringsverdier blir representert med et bestemt antall bits. For eksempel dersom det er 256 kvantiseringsverdier, da er hver verdi - og dermed hver sample - representert av en byte. Bitrepresentasjonene av alle samplene blir så sammenkoblet for å danne den digitale representasjonen av signalet. Som et eksempel, hvis et analogt lydsignal samples ved 8000 prøver per sekund, og hver prøve blir kvantisert og representert med 8 bits, vil det resulterende digitale signalet ha en hastighet på 64.000 bits per sekund. Ved avspilling kan lyden dekodes tilbake til analogt signal. 
+
+
+Den vanlige enkodingsteknikken som akkurat ble deskrevet kalles **pulse code modulation (PCM).** *Stemmeenkoding* bruker ofte PCM, med en samplingrate på 8,000 per sekund og 8 bit per sample, som gir en rate på 64kbps. *CD* bruker også PCM, med en samplingsrate på 44,100 samles i sekundet med 16 bits per sample, som gir 705,6 kbps for mono og 1.411 Mbps for stereo. 
+
+PCM brukes sjeldent på internettet. En vanlig kompresjonsteknikk for nær CD-kvalitets steromeusikk er **MPEG 1 layer 3** eller også kjent som **MP3**. MP3 enkodere kan komprimere til mange forskjellige rater; 128 kbps er den vanligste og produserer liten lyddegradering. En relatert standart er **Advanced Audio Coding (AAC)** som er laget av Apple. 
+
+
+#### Types of Multimedia Network Applications
+
+Vi deler multimedia-applikasjoner inn i tre kategorier: *(i) streaming stored audio/video*, *(ii) conversional voive/video-over-IP* og *(iii) streaming live audio/video*. 
+
+
+##### Streaming Stored Audio and Video
+
+Streaming lagret lyd (Spotify) er veldig lik streaming lagret video, selvom bitratene er typisk mye mindre. I denne klassen av applikasjoner er det underliggende mediumet forhåndsinnspilt video, slik som en film, tv-serie osv. Disse forhåndsinnspilte videoene blir plassert på servere, og brukere sender requests til serverene for å se videoer *on demand*. 
+
+Streaming stored video har tre viktige egenskaper:
+
+* *Streaming.* I en streaming stored videoapplikasjon, vil klienten typisk begynne å spille videoen et par sekunder etter at den har begynt å motta video fra serveren. Dette betyr at klienten vil spille av fra et sted i videoen samtidig som den mottar senere deler fra serveren. Denne teknikken kalt **streaming** unngår å måtte laste ned hele videofilmen før man begynner å spille av. 
+* *Interactivity*. Fordi mediet er forhåndsinnspilt, kan brukeren pause, reposisjonere, spole, øke hastighet på videoinnholdet. 
+* *Continous playout.* Når avspilling av videoen begynner, bør den fortsette i henhold til opprinnelig timing av opptaket. Derfor må data mottas fra serveren i tide for utspillingen hos klienten. Ellers opplever brukerne frysing av videoklipp (når klienten venter på de forsinkede rammene) eller rammen hopper over (når klienten hopper over forsinkede rammer).
+
+> Den aller viktigste ytelsesmålingen for streaming av video er gjennomsnittlig gjennomstrømning. 
+
+
+##### Conversional Voice- and Video-over-IP
+
+Sanntidssamtaler over Internett blir ofte referert til som **Internett-telefoni**, siden det er, fra brukerens perspektiv, det som ligner på den tradisjonelle *kretskoblede telefontjenesten*. Det kalles også **Voice-over-IP (VoIP)**. Samtalevideo er likt, bortsett fra at den inkluderer video av deltakerene i tillegg til stemmene deres. I Kap. 2 så vi på et antall akser som applikasjonskrav kan bli klassifisert av. To av disse aksene - timinghensyn og toleranse av datatap - er veldig viktige for samtalelyd og -video. 
+
+* Timinghensyn er viktig fordi lyd- og videosamtaleapplikasjoner er veldig **forsinkelses-sensitive**. Dersom forsinkelsen på en samtale i en slik applikasjon blir for stor blir det nærmest umulig å holde en samtale. 
+
+* På den andre siden er samtalemultimediaapplikasjoner **taps-tolerante** (*eng. loss-tolerant*) - tap av og til fører til glitches i lyd/video-avstillingen, og disse tapene kan ofte bli delvis eller helt gjemt. Denne forsinkelsessensitiveten og tapstoleransen karakteristikkene er helt klart annerledes enn de elastiskdata-applikasjonene slik som nettsurfing, epost og lignede. 
+
+
+##### Streaming Live Audio and Video
+
+Denne tredje klassen av applikasjoner ligner på tradisjonell kringkastingsradio og fjernsyn, bortsett fra at overføring foregår over Internett. Disse programmene tillater en bruker å motta en *live* radio eller tv-overføring, for eksempel en sanntids sportsbegivenhet eller en pågående nyhetshendelse som sendes fra et hvilket som helst hjørne av verden. I dag sender tusenvis av radio- og fjernsynsstasjoner over hele verden kringkasting av innhold over Internett.
+
+Multicast-distribusjonen blir som oftest utført i dag via applikasjonslags multicast (ved hjelp av P2P-nettverk eller CDN) eller gjennom flere separate unicast strømmer. Siden et event er live, kan vi tillate noe forsinkelser fra hendelsen til en bruker spiller den av på skjermen, rundt 10 sekunder vil være tilatt. 
+
+
+### Streaming Stored Video
+
+Streaming-videosystemer kan bli klassifisert i tre kategorier: **UDP streaming**, **HTTP streaming** og **adaptiv HTTP streaming**. Selvom alle disse brukes i praksis, bruker majoriteten av dagens systemer *HTTP streaming* og *adaptiv HTTP streaming*. 
+
+En felles egenskap av disse tre formene er den omfattende bruken av applikasjonsbuffer på lientsiden for å redusere effektene av varierende ende-til-ende forsinkelser og varierende mengder tilgjengelig båndbredde mellom server og klient. 
+
+For streaming vide (lagret og live) kan brukerne vanligvis tolererer en liten oppsummering på flere sekunder mellom klienten ber om en video, til klienten spiller den av. 
+
+Derfor, når videoen kommer til klienten, behøver klienten ikke umiddelbart å starte videoen, men kan istedet bygge opp en reserve av video i en applikasjonsbuffer. Når klienten har bygd opp en reserve på flere sekunder med buffret-men-ikke-avspilt-video, kan klienten spille av videoen.  
+
+Det er to viktige fordeler som tilbys av en slik **klientbuffering**. For det første kan klientsidebuffering absorbere variasjoner i server-til-klientforsinkelse. Hvis et bestemt stykke videodata forsinkes, så lenge det kommer før reserven av mottatt-men ikke-spilt video er oppbrukt, vil denne lange forsinkelsen ikke bli lagt merke til. For det andre, hvis server-til-klient båndbredde kort faller under videokonsentrasjonshastigheten, kan en bruker fortsette å nyte kontinuerlig avspilling, igjen så lenge klientprogrambufferen ikke blir helt tom. 
+
+Figur 7.1 under illustrerer klient-side buffering. I dette eksempelet er videoen kodet i en viss bitrate, og dermed skal hver videoblokk med videorammer spilles over samme tidsrom, *∆*. Serveren sender første videoblokk på t<sub>0</sub>, andre blokk på t<sub>0</sub> + ∆, og tredje blokk på t<sub>0</sub> + 2∆, osv.
+
+Når videoen skal avspilles må alle hver videoblokk bli avspilt i tidsrommet ∆. Dersom klienten skulle ha spilt av videoen med en gang første blokk ankom, ville ikke klienten rukket å få blokk 2 før blokk 1 var ferdig. Istedet venter klienten til t<sub>3</sub> med å starte å spille av. 
+
+![7.1](https://i.imgur.com/7i1JGTT.png)
+
+#### UDP Streaming
+Vi skal kjapt se på UDP-streaming. Med UDP-streaming overfører serveren video med en hastighet som samsvarer med klientens video-consumption rate ved å klokke ut videoens klumper over UDP i en jevn hastighet. 
+
+For eksempel, hvis videoforbruket er 2 Mbps og hver UDP-pakke bærer 8 000 bits av video, vil serveren sende en UDP-pakke inn i socketen hver (8000 bits) / (2 Mbps) = 4 msek. Som vi lærte i kapittel 3, fordi UDP ikke bruker en overbelastningsstyringsmekanisme, kan serveren skyve pakker inn i nettverket ved forbrukstakten av videoen uten ratekontrollsbegrensningene i TCP. UDP-streaming bruker vanligvis en liten klient-sidebuffer, stor nok til å holde mindre enn et sekund med video.
+
+Før du overfører videobitene til UDP, vil serveren inkapslere videobrikkene i transportpakker som er spesielt utviklet for å transportere lyd og video, ved hjelp av *Real-Time Transport Protocol (RTP)* eller en lignende ordning. 
+
+* En annen kjennetegn ved UDP-streaming er at i tillegg til server-til-klient videostrømmen, opprettholder klienten og serveren i parallell også en separat kontrollforbindelse der klienten sender kommandoer om tilstandssendringer (for eksempel pause, play , reposisjon, og så videre). 
+
+Har flere negative trekk:
+
+* For det første, på grunn av den uforutsigbare og varierende mengden tilgjengelig båndbredde mellom server og klient, kan UDP-streaming med konstant hastighet ikke gi kontinuerlig avspilling. For eksempel, vurder scenariet der videokonsentrasjonshastigheten er 1 Mbps, og den tilgjengelige båndbredden til server-til-klienten er vanligvis mer enn 1 Mbps, men noen få minutter faller den tilgjengelige båndbredden under 1 Mbps i flere sekunder. I et slikt scenario vil et UDP-streaming-system som overfører video med en konstant hastighet på 1 Mbps over RTP / UDP, sannsynligvis gi en dårlig brukeropplevelse, med frysing eller hoppet over rammer snart etter at tilgjengelig båndbredde faller under 1 Mbps. 
+* Den andre ulempen av UDP-streaming er at det krever en media-kontrollserver, for eksempel en RTSP-server, for å prosessere interaktivitetsforespørsler fra klient til server og å spore klienttilstand (f.eks. klientens avspillingspunkt i videoen, om videoen blir pauset eller spilt, og så videre) for hver pågående klientsøkt. Dette øker den totale kostnaden og kompleksiteten i å distribuere et stort videoprosesssystem. 
+* Den tredje ulempen er at mange brannmurer er konfigurert til å blokkere UDP-trafikk, slik at brukerne bak disse brannmurene ikke mottar UDP-video.
+
+
+
+#### HTTP Streaming
+
+I HTTP streaming, så blir videoen bare lagret på en HTTP-server som en ordinær fil med en spesifikk URL. Når en bruker ønsker å se videoen, må klienten etablere en TCP-tilkobling til serveren, gjøre en HTTP GET-request for den URL-en. Serveren sender så videofilen i en HTTP Response-melding, så fort som mulig, dvs. så fort som TCP congestion control og flow control tillater. 
+
+P klientsiden blir bytene fanget i klientapplikasjonens buffer. Når et bestemt antall bytes er ankommet, kan klienten spille av videoen. Klienten henter periodeisk videorammer fra bufferen, dekomprimerer rammene, og viser dem på brukerens skjerm. 
+
+Som vi lærte i Kap. 3 kan overføring av filer over TCP gi stor varians på server-til-klient-overføringsrate, pga TCP congestion control og flow control. Derfor er det ikke uvanlig at overføringsraten varierer på en *saw-tooth* måte (opp-og-ned). I tillegg kan pakker bli veldig forsinket pga TCPs re-sendingsmekanisme. Dette kan unngås med klientbufring og prefetching (skal se på i neste avsnitt). 
+
+Bruken av HTTP over TCP tillater videoen å traversere brannmurer og NATs mye lettere. Streaming over HTTP har heller ikke bruk for en mediakontroll-server, slik som en RTSP, som gjør det billigere. På grunn av disse fordelene bruker de fleste video-strømmetjenestene idag, inkludert YouTube og Netflix, HTTP streaming over TCP som sin underliggende strømmeprotokoll. 
+
+###### Prefetching Video
+
+For streaming av *lagret/stored* video, kan klienten forsøke å laste ned videoen med en høyere rate enn forbruksraten, og dermed **prefetching** (*nor. forhåndshenter*) videorammer som skal bli brukt i fremtiden. Denne prefetchede videoen er naturligvis lagret i klientapplikasjonens buffer. 
+
+Slik prefetching forekommer naturlig med TCP streaming, siden TCPs congestion avoidance vil forsøke å bruke all tilgjengelig båndbredde mellom server og klient. 
+
+For å få litt innsikt i prefetching, la oss ta en titt på et enkelt eksempel. Anta at *videoforbruket* er 1 Mbps, men nettverket kan levere videoen fra server til klient med en konstant hastighet på 1,5 Mbps. Da vil klienten ikke bare kunne spille av videoen med en veldig liten spillforsinkelse, men vil også kunne *øke mengden buffede videodata med 500 Kbits hvert sekund*. På denne måten, hvis klienten i fremtiden mottar data med en hastighet på mindre enn 1 Mbps i en kort tidsperiode, vil klienten kunne fortsette å gi kontinuerlig avspilling på grunn av reserven i bufferen.
+
+
+##### Client Application Buffer and TCP 
+
+Figur 7.2 illustrerer interaksjonen mellom klient og server for HTTP-streaming. På serversiden, vil delen av videofil som er hvit allered ha blitt sendt til server-socketen, mens den blå delen er det som gjenstår å bli sendt. Etter å ha blitt sendt gjennom "socket døren", vil bytene bli plassert i TCP-sendbufferen før det blir sendt til internettet. 
+
+På klientsiden, leser klientapplikasjonen (media player) lese bytes fra TCP-mottakerbufferen (gjennom sin klientsocket), og plassere bytene i klientapplikasjonens buffer. Samtidig henter klientapplikasjonen periodisk videorammer fra klientapplikasjonsbufferen, dekomprimerer rammene og viser dem på brukerens skjerm.
+
+Dersom applikasjonsbufferen er større enn filstørrelsen vil det være som å laste ned en fil over HTTP - klienten henter kun filen så fort som mulig fra serveren.
+Men hva vil skje dersom brukeren pauser videoen under streamingprosessen. Under pauseperioden, blir ikke bits fjernet fra bufferen, og etterhvert vil bufferen bli full, dersom bufferens størrelse er mindre enn filstørrelsen. Når applikasjonsbufferen blir full, vil ikke bytes kunne flyttes fra TCP-mottakerbufferen. Når klientens TCP-mottakerbuffer blir full, kan ikke bytes lenger fjernes fra serverens TCP-sendebuffer, slik at den også blir full. Når TCP-sendebufferen blir full, kan serveren ikke sende flere byte til kontakten. Hvis brukeren midlertidig stopper videoen, kan serveren derfor bli tvunget til å slutte å overføre, i så fall vil serveren bli blokkert til brukeren gjenopptar videoen.
+
+Dersom man har en full buffer, vil ikke serveren kunne sende kjappere enn klientens videoforbruksrate. *Derfor pålegger en full klientprogrambuffer indirekte en grense på frekvensen som video kan sendes fra server til klient når den streames over HTTP.*
+
+![HTTPStreaming](https://i.imgur.com/W3YnmKz.png)
+
+##### Analysis of Video Streaming
+
+Enkelte enkle modeller vil gi mer innsikt i innledende avspillingsforsinkelse og frysing på grunn av applikasjonsbufferuttømming. Som vist i figur 7.3, la B betegne størrelsen (i biter) av klientens applikasjonsbuffer, og la Q angi antall biter som må buffes før klientprogrammet starter avspilling. (Selvfølgelig, Q < B.) La r angi videoforbrukshastigheten - hvor raskt klienten trekker biter ut av klientprogrambufferen under avspilling. Så, for eksempel hvis videoens rammeposisjon er 30 bilder/sek, og hver (komprimerte) ramme er 100,000 biter, deretter r = 3 Mbps. 
+
+![7.3](https://i.imgur.com/occPddK.png)
+
+La oss anta at serveren sender bits med konstant hastighet *x* når klientens buffer ikke er full. Anta at applikasjonens buffer er tom ved *t* = 0. Hva er tiden *t* = *t<sub>p</sub>* når avspillingen begynner? Hva er tiden *t = t <sub>f</sub>* når klient-applikasjonsbufferen blir full?
+
+* La oss først bestemme  *t<sub>p</sub>*, det er tiden når *Q* bits har kommet i applikasjonsbufferen. Det ankommer *x* bps. Det betyr at den initielle bufringforsinkelsen *t<sub>p</sub>* = *Q/x*.
+
+* La oss nå bestemme bestemme *t<sub>f</sub>*, når klientapplikasjonsbufferen blir full. Vi observerer at dersom *x* < *r* vil bufferen aldri bli full, nærmere bestemt vil den bli tom. Dersom *x* > *r*, vil bufferen kunne bli full, da det ankommer flere bits enn det klientapplikasjonen fjerner fra bufferen. Da vil bufferen fylles fra *Q* til *B* med en rate på *x* - *r* bits. Det gir formelen:  *t<sub>f</sub>* = *Q*/*x* + (*B*-*Q*)/(*x*-*r*).
+
+
+##### Early Termination and Reposition the Video
+
+HTTP streamingsystemer bruker ofte HTTP-byte-range headeren i HTTP GET-meldingen, som spesifiserer den spesifikke utvalget av bytes klienten ønsker å få fra den ønskede videoen. Dette er spesielt viktig når brukeren ønsker å reposisjonere seg, dvs. hoppe, til et senere punkt i videoen. Da må brukeren indikere den nye posisjonen, ved å sende en ny HTTP request. 
+
+Dersom en bruker ønsker å avslutte å se på en video tidlig vil det være prefetched-men-ikke-sett data overført av serveren - som vil være bortkastede nettverksbåndbredde og serverresursser. Dersom man spoler forbi eller terminerer videoen tidlig, vil man forkaste allerede nedlastet video, , som er dette bortkastet bruk av båndbredde og resursser, og derfor har mange applikasjonsbuffere begresende buffere, for bespare seg på slike bortkastede rammer. 
+
+
+#### Adaptiv Streaming and DASH
+
+Selvom HTTP streaming, beskrevet som over er brukt mye i praksis, har den en stor mangel. Alle klienter mottar samme koding av videoen, selvom det kan være store variasjoner på tilgjenelig båndbredde for klienten, både på tvers av forskjellige klienter, men også over tid for samme klient. Dette har ledet til utviklingen av en ny type HTTP-basert streaming kalt **Dynamic Adaptive Streaming over HTTP (DASH)**. I DASH blir video kodet  til forskjellige versjoner, der hver versjon har forskjellige bitrater og dermed kvalitetsnivåer. Klienten velger dynamisk deler av videosegmenter på noen få sekunder fra forskjellige versjoner. Når det mengden tilgjengelig båndbredde er høy, velger klienten høybit-rate versjonen, og når det er lite tilgjengelig båndbredde velger klienten dårligere kvalitetet.
+
+Tillater brukere med forskjellige internettaksessrater å se sreamme videoer med forskjellige koderater. Med DASH er hver videoversjon lagret i HTTP-serveren, hver med en forskjellig URL. HTTP-serveren har også en **manifest-fil**, som oppgir URL-en for hver av versjonene sammen med dems bitrate. Klienten ber først om manifestfilen og lærer om de forskjellige versjonene. Klienten velger så en chuck med videodata fra en versjon, regner ut fått båndbredde som kjører en *rate determination alogrithm* som velger neste chuck å forespørre. 
+
+Ved dynamisk oppsyn på tilgjengelig båndbredde, klientbuffernivå, og endre på overføreingsraten med versjonsvitsjing, oppnår som oftest DASH kontinuerlig avspilling med beste kvalitetsnivå tilgjengelig. Det lagres også separat mange forskjellige versjoner av lyden, som også har sin egen URL.
+
+* Med disse implementasjonene kan brukeren velge chuncks med både videodata og lyddata i forskjellige kvaliteter. 
+
+
+#### Content Distribution Networks
+
+For et internettvideoselskap er kanskje den mest "rett frem"-løsningen for å tilby videostreaming er å kjøpe et enkelt massivt datasenter, lagre alle dens videoer i datasenteret og strømme videoer direkte fra datasenteret til klienter over hele verden. Men det er tre store problemer med denne fremgangsmåten. 
+
+* Først dersom en klient er langt unna datasenteret, vil server-til-klient-pakker krysse mange kommunikasjonskoblinger og vil nok gå igjennom mange ISP-er, med noen ISP-er på forskjellige kontinenter. Dersom en av disse koblingene tilbyr en gjennomstrømning som er lavere enn videoforbrukerraten, vil ende-til-ende gjennomstrømningen være mindre enn forbrukerraten, og vil resultere i irriterende fryseforsinkelser for brukeren. Sannsyneligheten for noe sånt øker med antall koblinger fra server til klient. 
+* Den andre negative egenaskapen er at en populær video som gjerne vil bli sendt mange ganger over samme kommunikasjonslink. Ikke bare vil det være bortkastet båndbredde, vil også internettvideoselskapet måtte betale ISP-en for å sende de samme bytesene igjen og igjen.
+* Et tredje problem er at denne løsningen er at et enkelt datasenter representerer et enkelt punkt for feil - dersom datasenteret eller koblingene går ned, vil det ikke være mulig å distribuere noen videostrømmer. 
+
+
+For å ta hånd om dette problemet bruker de aller fleste store videostrømmetjenester **Content Distribution Networks (CDNs)**. En CDN passer på servere på flere geografiske distribuerte områder, lagrer kopier av videoer (og andre webinnhold) i sine servere, og forsøker å sende hver brukerforespørsel til en CDN-lokasjon som bil tilby den beste brukeropplevelsen. Det kan være en **privat CDN**, som er eid av selskapet som distribuerer selv, eller en **third-party CDN**, som distribuerer innhold på vegne av flere content-providers. 
+
+CDNs har typisk en av to forskjellige server plasseringsfilosofier:
+
+* **Enter Deep.** En av filosofiene er på *enter deep* inn i aksessnettverkene til ISP-ene, ved å utplassere serverclustere i aksess ISP-er over hele verden. Målet for denne fremgangsmåten er å komme nærme endebrukerne, derfor ved å forbedre bruker-oppfattet forsinkelse og gjennomstrømning, ved å redusere antall koblinger mellom brukeren og CDN-clusteret der den henter data. På grunn av dette distribuerte designet, vil oppgaven om å styre og vedlikeholde clusterne vanskelig.
+* **Bring Home.** En annen designfilosofi er å *bring the ISPs home*, ved å bygge store clusters med et mindre antall (f.eks. titall) av nøkkellokasjoner og koble sammen disse clusterne med et privat high-speed-nettverk. IStedet for å gå inn i aksess ISP-ene, vil disse CDNene typisk plassere hver cluster på en lokasjon som er nær PoPs (Points of Presence) av mange tier-1 ISP-er. Sammenliknet med enter deep-designmetoden vil denne bring-home designet resultere i mindre vedlikehold og administrering, men på bekostning av høyere forsinkelse og lavere gjennomstrømning til brukerne. 
+
+Når clusterne er på plass, vil CDN-en replikere innhold på dens clustere. CDN-en ønsker nødvendigvis ikke å kopiere alle videoer i hvert cluster, siden noen er sjeldent sett, og er populære kun i noen land. Når en bruker ber om en video fra et cluster som ikke har videoen, henter clusteret videoen fra sentralrepoet eller et annet cluster, og lagrer samtidigt en kopi av videoen samtidigt som den streamer videoen til klienten. Når clusteret senere blir fult fjerner den videoer som ikke blir forespurt ofte. 
+
+
+####### CDN Operation
+
+Når har vi sett på de to største måtene å utplassere en CDN. La oss nå se på hvordan en CDN opererer. Når en nettleser blir bedt om å hente en spesifikk video (bestemt av URL, må CDN-en ta fange opp requesten, slik at den kan (1) bestemme et passende CDN servercluster for klienten på det tidspunktet, og (2) omdirigere klientens forespørsel til en server i det clusteret. 
+
+De fleste CDN-er tar fordel av DNS for å fange og omdirigere requests. La oss se på et enkelt eksempel på hvordan DNS typisk er involvert. La oss se for oss en content-provider NetCinema, bruker en tredjeparts CDN-selspan KingCDN, for distribuere sine videoer til kunder. La oss nå se på de 6 stegene i Figur 7.4 under:
+
+![7.4](https://i.imgur.com/TWHERAq.png)
+
+1. Bruker besøker en nettside hos NetCinema
+2. Brukerer trykker seg inn på linken  http://video.netcinema.com/6Y7B23V, brukerens vert sender en DNS-spørring for video.netcinema.com.
+3. Brukerens lokale DNS-server (LDNS) videresender DNS-spørringen til en autorativ DNS-server, som ser strengen "video" i vertsnavnet. For å "overlate" DNS-spørringen til KingCDN, i stedet for å returnere en IP-adresse, returnerer den autoriserte DNS-tjeneren NetCinema til LDNS et vertsnavn i KingCDNs domene, for eksempel a1105.kingcdn.com.
+4. Herfra går DNS-spørringen inn i KingCDNs private DNS-infrastruktur. Brukerens LDNS sender deretter en ny spørring, nå for a1105.kingcdn.com, og KingCDNs DNS-system returnerer til slutt IP-adressene til en KingCDN innholdsserver til LDNS. Det er således her, innenfor KingCDNs DNS-system, at CDN-serveren som kunden vil motta innholdet til, er spesifisert.
+5. LDNS-en videresender IP-adressen til den innholdsleverende CDN-noden til verten.
+6. Når brukeren får IP-adressen til KingCDN sin innholdsserver, lager den en direkte TCP-tilkobling med serveren på den IP-adressen og gjør en HTTP GET-request på videoen. 
+
+
+##### Cluster Selecion Strategies
+
+Ved kjernen av enhver CDN utplassering er en **cluster selection strategy**, en mekanisme for å dynamisk omdirigere klienter til et servercluster eller et datasenter inni CDN-en. 
+
+En enkel strategi er å tilordne klienten til klyngen som er **nærmest geografisk**. Ved å bruke kommersielle geografiske databaser (som Quova og Max-Mind), blir hver LDNS IP-adresse kartlagt til en geografisk plassering.
+
+For å kunne bestemme det beste clusteret for en klient basert på de nåværende trafikkforholdene, kan CDN i stedet utføre periodiske **sanntidsmålinger** av forsinkelse og tapytelse mellom clustere og klienter. For eksempel kan en CDN ha hver av sine clustere periodisk sende probes (for eksempel pingmeldinger eller DNS-spørringer) til alle LDNSene rundt om i verden. En ulempe ved denne tilnærmingen er at mange LDNSer er konfigurert til ikke å svare på slike probes.
+
+> Kan se på mellomrommet mellom SYNACK og ACK-en i handshaken mellom klient og server, istedet for å sende ekstra trafikk for å undersøke forholdene. Dette krever dog å omdirigere klienten til andre clustere med tiden for å se hvor det er best. 
+
+
+En helt annen tilnærming for å matche klienter med CDN-servere er å bruke **IP anycast**. Ideen bak IP anycast er å få ruterne i Internettet til å føre klientens pakker til det "nærmeste" clusteret, som bestemt av BGP. Spesifikt, som vist i figur 7.5, i løpet av konfigurasjonen av IP-anycast, tilordner CDN-selskapet *samme* IP-adresse til hver av sine klynger, og bruker *standard BGP* for å annonsere denne IP-adressen fra hver av de forskjellige clusterlokasjonene. Når en BGP-ruter mottar flere ruteannonser for samme IP-adresse, behandler den disse annonsene som å gi forskjellige veier til samme fysiske plassering (når annonsene faktisk er for forskjellige veier til *forskjellige* fysiske steder). Etter standard operasjonsprosedyrer vil BGP-ruteren da velge den "beste" (for eksempel nærmeste, bestemt av AS-hop-teller) ruten til IP-adressen i henhold til den lokale rutevalgsmekanismen.
+
+
+![IP-anycast](https://i.imgur.com/SYOloXh.png)
+
+
+#### Case Studies: Netflix, YouTube and Kankan
+
+##### Netflix 
+
+Genererer idag rundt 80% av all nedlastingstrafikk i USA. Som vi skal se bruker Netflix mange teknikker som vi har sett i dette kapitlet, inkludert videodistribuering med CDN (flere CDN-er faktisk) og adaptiv streaming over HTTP. 
+
+Figur 7.6 viser den generelle arkitekturen til Netflix-plattformen. Den har fire hovedkomponenter: registrering og betalingstjenester, Amazonskyen, flere CDN-leverandører, og klienter. I sin egen maskinvare-infrastruktur håndterer Netflix registrering og betalingsservere. Netflix kjører sin online-tjnesneste på virtuelle maskiner på Amazon Cloud. Noen av funksjonene som skjer på Amazon cloud inkluderer:
+
+* *Content ingestion.* Før netflix kan levere filmer til kunder, må de først legge inn og prosessere filmene. Netflix får en studioversjon og opplaster dem til vertene i Amazon-skyen.
+* *Content processing.* Maskinene  på Amazon cloud lager mange formater av hver film, passende for en rekke klientvideospillere kjørende på datamaskin, mobil eller spillkonsoller. En forskjellig versjon blir laget for hver av disse formatene, med forskjellige bitrater, som tillater adaptiv streaming over HTTP med DASH.
+* *Uploading versions to the CDNs.* Når alle versjonene av en film har blitt laget, må vertene i Amazon cloud-en laste opp versjonene til CDN-ene. 
+
+For å levere filmer til kunder *on demand, bruker Netflix mye CDN-teknologi. Netflix brukte i 2012 tre tredjeparts CDN-selskap samtidigt.
+
+![netflix](https://i.imgur.com/Bvb7vBf.png)
+
+##### YouTube
+
+Med rundt en halv milliard videoer i bibloteket sitt og en halv milliard avspillinger per dag (2011), er YouTube (eid av Google) den største videodelingssiden i verden. Som med Netflix, bruker YouTube mye CDN-teknologi for å distribuere filmene sine. Ulikt Netflix, bruker ikke Google tredjeparts CDN-er, men bruker istedet sine egen private CDN for å distribuere YouTube-videoer. Google har installert serverclustere på mange hundre forskjellige steder. Google bruker DNS for å omdirigere en kunde-forespørsel til et spesifikt cluster. 
+
+For mesteparten av tiden er Google sin cluster-strategi å omdirigere klienten til klusteret der RTT-en mellom klienten og clusteret er minst. Men noen ganger må en klient videresendes til et cluster lenger unna for å balansere trafikken på clusterene. 
+
+Dersom et cluster for en request for en fil som den ikke besitter, så kan den videresende klienten istedet for å hente filen, ved å bruke en såkalt HTTP redirect-melding. 
+
+YouTube bruker HTTP-streaming, og lager ofte et lite antall forskjellige versjoner for en film , hver med en forskjellig bitrate og korresponderende kvalitetsnivå. I 2011, brukte YouTube ikke adaptive streaming (som DASH), men istedet krevde at brukeren manuelt valgte versjon. For å spare båndbredde og serverressurser som ville bli bortkastet ved reposisjonering eller tidlig avslutning, bruker YouTube HTTP byte-range-forespørselen for å begrense strømmen av overførte data etter at en målmengde video er forhåndshentet.
+
+
+#### Kankan
+
+Netflix og YouTube må ikke bare betale for servermaskinvare, men må også for båndbredden til serverne brukt for å distribuere videoene. Gitt skalaene på disse tjenestene blir et slikt "klient-server"-utplassering ekstermt kostbart. 
+
+Vi konkluderer dette avsnittet med å snakke om en annen måte å tilby video *on demand* over internettet på en større skala, som tillater en signifikant lavere kontnad på båndbredde og infrastruktur Denne måten bruker P2P-leveranse istedet for klient-server(via CDN-er)-leveranse. P2P-videoleveranse har blitt brukt med stor suksess av flere selskaper i Kina, inkludert Kankan (eid av Xunlei), og fler. Kankan, som i 2011 ledet P2P-basert video-on-demand-levering i Kina, med over 20 millioner unike brukere hver måned. 
+
+På et høyt nibå er P2P-videostreaming vedlig likt BitTorrent-filnedlasting. Når en peer øsnker å se en film, kontakter den en tracker for å se at andre peers i systemet har en kopi av den filmen. Når peeren så spør om deler av filmen i paralell fra andre peers som har filen. Ulikt fra BitTorret, er at spørringer er gjort for deler som skal bli spilt i nær fremtid, for å sikre kontinuerlig avspilling. 
+
+Kankan-designet bruker en *tracker* og sin egen DHT (distributed hash table) for å følge med på innhold. Kankan bruker UDP når det er mulig, og leder til stort forbruk av UDP-trafikk i Kina. 
+
+
+### Voice-over-IP
+
+Sanntidssamtaler over internettet blir ofte referert til som **internettelefoni**, det er også kjent som **Voice-over-IP (VoIP)**. Vanlig video er likt på mange måter med VoIP, bortsett fra at det inkluderer video av deltakerne, i tillegg til stemmene deres.  
+
+
+#### Limitations of the Best-Effort IP Service
+
+IP tilbyr "best-effort"-tjeneste. Dette betyr at IP-protokollen, gjør så godt den kan for å flytte hvert datagram fra kilde til destinasjon så fort som mulig, men lover ingenting, ikke at det kommer frem i det hele tatt heller. 
+
+Mangelen på slike garantier er en stor utfordring for designet av sanntidssamtaleapplikasjoner, som er svært sensitive for pakkeforsinkelse, jitter og tap. I denne delen dekkes flere måter som kan forbedre ytelsen til VoIP over et best-effort-nettverk.
+
+I en applikasjon der senderen genererer 8,000 bytes per sekund, og sender disse i en klump med bytes hvert 20 msec. Hver pakke kommer seg til mottakeren med konstant ende-til-ende-forsinkelse, når pakken ankommer hos mottakeren periodesk hvert 20 msec. I et slikt miljø kan mottaker spille av hver chunck så fort den ankommer. Uheldigvis er det slik at pakker kan bli borte og de fleste pakker ikke vil ha samme ende-til-ende forsinkelse. Av denne grunn må mottakeren være forsiktig når det gjelder å bestemme (1) når man skal spille av en chunck, og (2) hva man skal gjøre med en manglende chunck.
+
+
+##### Packet Loss
+
+La oss se for oss et UDP-datagram som har blitt laget av VoIP-applikasjonen. UDP-segmentet er innkapslet i et IP-datagram. Når datagrammer går igjennom nettverket, går det igjennom ruterbuffere (dvs. køer). Det er mulig at en av disse bufferene på veien fra senderen til mottakeren er full, og i dette tilfellet kan det ankommende datagrammet bli forkastet. 
+
+Tap kan bli eliminert ved å sende pakker over TCP (som tilbyr pålitelig dataoverføring) istedet for UDP. Imidlertid er retransmisjonsteknikker ofte ansett som uakseptable for sanntidstale-applikasjoner som VoIP, fordi de øker ende-til-ende-forsinkelsen. Videre, på grunn av TCP-overbelastningsstyring, kan pakktap føre til en reduksjon av TCP-senderens overføringshastighet til en hastighet som er lavere enn mottakerens dreneringshastighet, og muligens fører til buffersulting. Av disse grunner kjører de fleste eksisterende VoIP-applikasjoner over UDP som standard. Skype bruker UDP med mindre en bruker står bak en NAT eller brannmur som blokkerer UDP-segmenter (i hvilket tilfelle TCP brukes).
+
+Men det å miste pakker er ikke nødvendigvis så katastrofalt som man kanskje tror. Faktisk kan pakkefallsrater mellom 1 og 20 prosent tolereres, avhengig av hvordan lyden blir kodet og overført, og om hvordan tapet er skjult ved mottakeren. For eksempel kan feilkorrigering (FEC) bidra til å skjule pakketap. Vi ser nedenfor at med FEC overføres redundante opplysninger sammen med den opprinnelige informasjonen, slik at noen av de tapte originaldataene kan gjenvinnes fra den overflødige informasjonen. 
+
+> Likevel, hvis en eller flere av koblingene mellom avsender og mottaker er svært overbelastet, og pakketap overstiger 10 til 20 prosent (for eksempel på en trådløs kobling), så er det egentlig ingenting som kan gjøres for å oppnå akseptabel lydkvalitet. 
+
+Klart har best-service-tjenesten sine begrensninger.
+
+##### End-to-Ende Delay
+
+**Ende-til-ende-forsinkelsen** er akkumulering av overføring, prosessering og køforsinkelser i rutere, forplantningsforsinkelser i koblinger; og forsinkelser i endesystems prosesseringsforsinkelser.
+
+For sanntidstalapplikasjoner, som VoIP, er ende-til-ende-forsinkelser mindre nn 150 msec ikke oppfattet av et menneske. Men forsinkelser mellom 1590 og 400 msec kan være akseptable med ikke ideelle, og forsinkelser over 400 msec kan være et hinder for lydsamtaler. Pakker som forsinkes med mer enn terskelen, blir dermed effektivt tapt.
+
+Mottakersiden av en VoIP-applikasjon vil vanligvis droppe eventuelle pakker som er mer forsinket enn en bestemt terskel (*eng. threshold*), f.eks. mer enn 400 msec. Pakker som forsinkes med mer en thresholden blir sett på som tapt.
+
+
+##### Packet Jitter
+
+En viktig komponent i ende-til-ende forsinkelser er variasjonen på køforsinkelsene som en pakke opplever i nettverksruterne. På grunn av disse varierende forsinkelsene, kan tiden fra når en pakke genereres ved kilden til den mottas hos mottakeren variere fra pakke til pakke, som vist i figur 7.1. Dette fenomenet kalles **jitter*. 
+
+Dersom mottakeren ignorerer tilstedeværelsen av jitter og spiller ut chuncks så snart de kommer, kan den resulterende lydkvaliteten lett bli uforståelig for mottakeren. Heldigvis kan jitter ofte bli fjernet ved å bruke **sekvensnummere**, **timestamps** og **avspillingsdelay**.
+
+
+#### Removing Jitter at the Receiver for Audio
+
+For vår VoIP-applikasjon, hvor pakker genereres periodisk, burde mottaker forsøke å spille av chuncksene periodisk, med nærvær av tilfeldig nettverksjitter. Dette er typisk gjort ved å å kombinere følgende to mekanismer:
+
+* *Forhåndsfører hver bit med en **tidsstempel***. Avsenderen stempler hver chunck med tiden da chunck ble generert.
+* ***Delaying playout** of chuncks at the receiver.* Som vi så i Figur 7.1, må avspillingsforsinkelsen av de mottakte lydbitene være lang nok til at de fleste av pakkene ankommer før de er planlagt for avspilling. Denne avspillingsforsinkelsen kan bli endret under avspillingen av lyden, eller være bestemt for hele avspillingen. 
+
+##### Fixed Playout Delay
+
+Med den bestemte-forsinkelse-strategien, vil mottaker prøve å spille av hver bit eksakt *q* msec etter at biten ble generert. Så dersom en bit ble tidsstemplet hos senderen hos tid *t*, skal biten bli avspilt på tid *t* + *q*. Pakker som ankommer etter den planlagte avspillingstiden blir kastet og ansett som tapte. 
+
+Men hva er et godt valg for *q*? VoIP, kan støtte forsinkelser opp til 400 msec, men kan få bedre samtaler med mindre forsinkelser. Men dersom *q* er veeldig mye mindre enn 400 msec, vil det være flere pakker som ikke ankommer innen den planlagte avspillingstiden sin. Avviket mellom avspillingsforsinkelsen og tapstapet er illustrert i figur 7.7. Der den første pakken mottas på tiden *r*. 
+
+For den første avspillingsplanen, er den faste innledende avspillingsforsinkelsen satt til *p - r*. Med denne tidsplanen kommer den fjerde pakken ikke fram til den planlagte avspillingen, og mottakeren anser det gått tapt. For den andre avspillingsplanen, er den faste innledende utkoblingsforsinkelsen satt til *p' - r*. For denne tidsplanen kommer alle pakker før de planlagte avspillingstidene, og det er derfor ikke noe tap.
+
+![7.7](https://i.imgur.com/GLiVfmG.png)
+
+
+##### Adaptive Playout Delay
+
+Forrige eksempel demonstrerte en viktig forsinkelses-tap forhandlingen som skjer når man bruker en avspillingsstrategi med bestemt avspillingsforsinkelse. Ved å gjør den første avspillingsforsinkelsen litt større, vil de fleste pakker ankomme før deadlinene sine, og det vil være neglisjerbar tap. 
+
+Den naturlige måten å håndtere denne avhandlingen er å estimere nettverksforsinkelsen og variansen av nettverksforsinkelsen, og for å justere avspillingsforsinkelsen tilsvarende i begynnelsen av hver snakkespurt. Her vil da talestillhet enten bli komprimert eller forlenget, utifra endringen i forsinkelse. 
+
+Beskriver nå en generisk algoritme som mottakeren kan bruke for å adaptivt justere avspillingsforisnkelser. La *t<sub>i</sub>* = tidsstempelet til den *i*'te pakken. *r<sub>i</sub>* = tiden pakke *i* ankommer hos mottakeren, og *p<sub>i</sub>*  = tiden pakke *i* blir avspilt hos mottaker. 
+
+Ende-til-ende-forsinkelsen til den *i*'te pakken er *r<sub>i</sub>* - *t<sub>i</sub>*. På grunn av nettverksjitter, vil denne forsinkelsen variere fra pakke til pakke. La *d<sub>i</sub>* betegne *gjennomsnitts* nettverksforsinkelsen når den *i*'te pakken er mottatt.
+
+![I](https://i.imgur.com/3arOVyV.png)
+, hvor *u* er en bestemt konstant f.eks. u = 0.01.
+La *v<sub>i</sub>* betegne det estimerte gjennomsnittsaviket fra gjennomsnittsforsinkelsen. 
+
+![II](https://i.imgur.com/KR1VFsX.png)
+
+Estimatetene for *d<sub>i</sub>* og *v<sub>i</sub>*, er regnet ut for hver pakke som ankommer. Etter å ha regnet ut disse estimatene vil mottaren bruke følgende algoritme for avspillingen av pakkene. Dersom pakke *i* er første pakke i en snakkespurt, er avspillingstiden *p<sub>i</sub>*:
+
+![III](https://i.imgur.com/qrD6O58.png)
+, hvor *K* er en positiv konstant som brukes for å få de færreste av de ankommende pakkene skal bli tapte pga. sen ankommelse. Differansen mellom når en pakke ble sendt til den bli spilt i en spurt er utregnet som et offset, fra når den første pakken ble sendt til den ble avspilt. La  
+
+![IV](https://i.imgur.com/fbLmu7P.png) 
+være tiden mellom fra første pakke i en snakkespurt ble laget til den ble avspilt. Dersom en pakke *j* også tilhører samme snakkespurt, vil avspillingstiden dens være
+
+![V](https://i.imgur.com/ohlCoZT.png)
+
+Algoritmen beskrevet gir perfekt mening antatt at en mottaker kan finne ut om en pakke er den første pakken i en snakkespurt. Dette kan gjøres ved å se på signalenergien. 
+
+
+#### Recovering from Packet Loss
+
+Skal nå beskrive noen skjemaer for å forsøke å beholde akseptabel lydkvalitet i nærvær av pakketap. Slike skjemaer er kalt **loss recovery schemes**. En pakke er tapt om den ikke kommer til mottakeren, eller om den kommer etter den planlagte avspillingstiden. 
+
+To typer **tapforventningsordninger** er **forward error correction (FEC)** og **interleaving**.
+
+
+##### Forward Error Correction (FEC)
+
+Hovedidén bak FEC er å legge til redudant informasjon i den original pakkestrømmen.  For kostnaden av å marginalt øke overføringsraten, kan den redudante informasjonen brukes til å rekonstruere tilnærminger eller eksakte versjoner av noen av de tapte pakkene. 
+
+Den første FEC-mekanismen sender en redudant kodet chunk etter hver *n*'te chunck. Den redudante chuncken blir laget ved å ta XOR på alle de *n* originale chunckene. På denne måten, dersom en av pakkene i en gruppe på *n + 1* pakker mistes, kan mottaren rekonstruere den tapte pakken. Men dersom to eller flere pakker i en gruppe blir mistet, kan ikke mottakeren rekonstruere pakkene. Ved å holde *n + 1*, gruppestørrelsen, liten, kan en stor andel av tapte pakker bli rekonstruert når det ikke er mye tap. 
+
+Den andre FEC-mekanismen er å sende en lavere lydoppløsningsstrøm som den redudante informasjonen. For eksempel kan senderen opprette en nominell lydstrøm og en tilsvarende lavoppløsning, lav-bitrates lydstrøm. (Den nominelle strømmen kan være en PCM-koding på 64 kbps, og den lavere-kvalitetsstrømmen kan være GSM-kodet på 13 kbps.) 
+
+Som vist i figur 7.8 konstruerer avsenderen den *n*te pakken ved å ta den neste delen fra den nominelle strømmen og legge til det *(n - 1)*'te stykket fra den redudante strømmen. På denne måten, når det ikke er et sammenhengende pakketap, kan mottakeren skjule tapet ved å spille ut den lavbitede kodede klumpen som kommer med den etterfølgende pakken. På den annen side øker de ekstra bitsene overføringsbåndbredden og avspillingsforsinkelsen.
+
+> Dersom man ønsker å kunne dekke sammenhengende tap, så kan man legge til både *(n-1)*'te og *(n-2)*'te ledd i den redudante strømmen, men som igjen vil øke overføringsbåndbredden og avspillingsforsinkelsen.
+
+
+![redudantstreams](https://i.imgur.com/15X5Gut.png)
+
+##### Interleaving
+
+Som et alternativ til redudant overføring, kan en VoIP-applikasjon sende flettet (*eng. interleaved*) lyd. Som vist i Figur 7.9, kan senderen resekvensere lyddata før overføring, slik at opprinnelig tilstøtende enheter er separert med en viss avstand i den overførte strømmen. 
+
+Interleaving kan redusere effekten av pakketap. Dersom for eksempel enheter er 5 msek lange og chunks er 20 msek (det vil si fire enheter per brikke), så kan den første chunken inneholde enhetene 1, 5, 9 og 13; den andre klumpen kunne inneholde enhetene 2, 6, 10 og 14; og så videre. 
+
+* Figur 7.9 viser at tapet av en enkelt pakke fra en interleaved strøm resulterer i flere små hull i den rekonstruerte strømmen, i motsetning til det eneste store gapet som ville oppstå i en ikke-interleaved strøm.
+
+![7.9](https://i.imgur.com/lGA0sbM.png)
+
+
+##### Error Concealment
+
+Error concealment (*nor. feilskjuling*) skjemaer forsøker å produsere erstattninger for tapte pakker som er like originalen. Slike teknikker jobber for relativt små tapsrater (mindre enn 15%), og får små pakker (4-40 msek). Når taplengden nærmer lengden på et fonem (5-100 msec - minste lydlengde som kan endre meningen til et ord) kan disse teknikkene feile, siden hele fonemer kan bli mistet av lytteren. 
+
+Den enkleste formen for mottakerbasert gjenoppretting er **pakkerepetisjon** (*eng. packet repitition*). Pakkerepetisjon erstatter tapte pakker med kopier av pakkene som kom umiddelbart før tapet. Den har lav kompleksitet og fungerer rimelig bra. En annen form for mottakerbasert gjenoppretting er **interpolering**, som bruker lyd før og etter tapet til å interpolere en passende pakke for å dekke tapet. Interpolering utfører noe bedre enn pakkerepitisjon, men er betydlig mer beregningskomplisert. 
+
+
+#### Case Study: VoIP with Skype
+
+Skype er en veldig populær VoIP-applikasjon med over 50 millioner aktive brukere. I tillegg til å tilby vert-til-vert VoIP-tjeneste, tilbyr også Skype vert-til-telefon-tjeneste, telefon-til-vert-tjeneste, og fler-parti vert-til-vert videokonferering. 
+
+Fordi Skype-protokollen er proprietær (har eierskap), og fordi alle Skypes kontroll- og mediepakker. For både tale og video har Skype-klientene mange forskjellige kodeker, som kan kode media til et bredt spekter av rater og kvaliteter. F.eks. har videosporene for Skype har blitt målt til å være så lave som 30 kbps for en lavkvalitets økt på opptil nesten 1 Mbps for en høykvalitets økt. 
+
+Vanligvis er Skypes lydkvalitet bedre enn kvaliteten på "POTS" (vanlig gammel telefonservice) levert av telefonlinjesystemet. (Skype-kodeker sampler vanligvis lyd på 16.000 samples/sek eller høyere, som gir rikere toner enn POTS, som sampler på 8000 samples/sek.) Som standard sender Skype lyd- og videopakker over *UDP*. Kontrollpakker sendes imidlertid over TCP, og mediepakker sendes også over TCP når brannmurer blokkerer UDP-strømmer. 
+
+* Skype bruker *FEC* for tapgjenvinning for både tale- og videostrømmer sendt over UDP. Skype-klienten tilpasser også lyd- og videostrømmene den sender til nåværende nettverksforhold, ved å endre videokvalitet og FEC overhead.
+
+Skype bruker P2P-tekikker på et antall innovative måter, som på en fin måte illustrerer hvordan P2P kan bli brukt i applikasjoner utover innholddistribusjon og fildeling. 
+
+* Som med direktemeldinger er vert-til-vert Internett-telefoni iboende P2P siden, i hjertet av applikasjonen, kommuniserer par av brukere (det vil si kolleger) i sanntid med hverandre. Men Skype har også P2P-teknikker for to andre viktige funksjoner, nemlig for brukerplassering og NAT-traversal.
+
+* Som vist i Figur 7.10 er hver peer (vert) i Skype organisert i et hierarisk nettverk, med hver pper enten klassifisert som super-peer eller vanlig peer. Skype opprettholder en indeks som kartlegger Skype-brukernavn til nåværende IP-adresser (og portnumre). Denne indeksen er distribuert over super-peers. Når Alice ønsker å ringe til Bob, søker hennes Skype-klient den distribuerte indeksen for å avgjøre Bobs nåværende IP-adresse.
+
+* P2P-teknikker er også brukt i Skype **relays**, som er nyttige for å etablere samtaler mellom verter på hjemmenettverk. Mange hjemmenettverkkonfigurasjoner tilbyr tilgang til internettet gjennom NATs. Husk at en NAT forhindrer en vert fra utenfor hjemmenettverket fra å starte en forbindelse til en vert i hjemmenettverket. Hvis begge Skype-oppringere har NAT, er det et problem - ingen av vertene verken aksepteres et anrop initiert av den andre, noe som gjør en samtale tilsynelatende umulig. Den klare bruken av super-peers og reléer løser pent dette problemet.
+
+	* Vertene bak NAT-ene får tildelt en super-peer, når de logger inn. Når en av vertene, vert A, ønsker å ringe den andre verten, vert B, vil vert A informere super-peeren sin om at den vil ringe vert B. Super-peeren kontakter super-peeren til vert B, som igjen informerer vert B om at vert A vil ta kontakt. De to super-peeren velger så en tredje ikke-NATet super-peer - relay-peeren - som skal være en releé mellom vert A og B. Vert A og vert Bs super-peers ber så sine verter om å initalisere en økt med releét. Dette er vist i figur 7.10. 
+	* Dersom det er flere verter som skal kommunisere sammen, bruker Skype en smart distribusjonsteknikk for å redusere den båndbreddeforbruket. Dersom det er *N* deltakere, så istedet for å sende *N - 1* lydstrømmer sender de alle strømmene til samtalestarteren, som kombinerer alle lydstrømmene til en felles lydstrøm som sendes til alle deltakerne via releén. For video, sendes alle N videostrømmene til et servercluster (i Estionia i 2011) som videresender de andre *N - 1* videostrømmene til hver deltaker. 
+
+	Man lurer kanskje på hvorfor man alltid sender strømmene fra samme sted, enten innom servercluster eller samtalestarteren. I begge fremgangsmåtene vil alle de N(N-1) strømmene bli kollektivt mottatt hos de *N* deltakerne i samtalen.
+	
+
+Årsaken er at fordi oppstrøms koblingsbåndbredder er signifikant lavere enn nedstrøms båndbredder i de fleste aksesslinker, kan oppstrømslinkene kanskje ikke støtte N-1-strømmer med P2P-tilnærmingen.
+
+> I VoIP-systemer som Skype kan vert A og vert B sniffe hverandres IP-adresser, som kan brukes med geolokasjonstjenester for å finne IP-adressens plassering, og se på BitTorrent hva som har blitt lastet ned på IP-adressen. 
+
+
+### Protocols for Real-Time Conversational Applications
+
+Sanntidstaleapplikasjoner, inkludert VoI og videokonferansing, er tiltrekkende og veldig populært. Derfor jobber IETF og ITU hardt med å få ut stadarder for denne klassen av applikasjoner. Med de passende standarder som er tilgjengelige for denne klassen applikasjoner, skaper uavhengige selskaper nye produkter som samarbeider med hverandre. I denne delen undersøker vi RTP for sanntidstaleapplikasjoner. Begge standarder nyter utbredt implementering i industriprodukter.
+
+#### RTP - Real-Time Transport Protocol
+
+I forrige del så vi at sendersiden av en VoIP-applikasjon legger på header-felt til lyd-chunker før den sender de til transportlaget. Disse header-feltene inkluderer sekvensnummer og tidsstempler. Ettersom de fleste multimedia networking applikasjoner bruker disse type felter, kan det være lurt med en standardisert pakkestruktur, med andre mulige nyttige felt. RTP, er en slik standard og kan bli brukt til å transportere vanlige formater som PCM, ACC og MP3 for lyd, og MPEG og H.263 for video. 
+
+##### RTP Basics
+
+RTP kjører typsik over UDP. Den sendende siden innkapsler en mediachunk i en RTP-pakke, innkapsler denne i et UDP-segment, og gir det til IP. Mottakersiden ekstraherer RTP-pakken fra UDP-segmentet, ekstraherer mediaet fra RTP-pakken, og gir det til mediaplayeren for dekoding og rendering. 
+
+For eksempel, bruk bruken av RTP for å transportere stemme. Anta at kildelyden er PCM-kodet (det betyr, samplet, kvantisert og digitalisert) ved 64 kbps. Anta videre at applikasjonen samler de kodede dataene i 20 msek biter, det vil si 160 bytes i en chunk. Sendingssiden legger til  hver chunk av lyddataene en RTP-header som inneholder typen lydkoding, et sekvensnummer og en tidsstempel. RTP-headeren er normalt 12 byte. Lydchunken sammen med RTP-headeren danner RTP-pakken.
+
+
+> Hvis en applikasjon inkorporerer RTP-i stedet for en proprietær ordning for å gi payload, sekvensnummer eller tidsstempler, vil applikasjonen lettere kunne samhandle med andre nettverksbaserte multimedieapplikasjoner.
+
+RTP tillater at hver kilde (for eksempel et kamera eller en mikrofon) tildeles sin egen uavhengige RTP-strøm av pakker. For eksempel, for en videokonferanse mellom to deltakere, kunne fire RTP-strømmer åpnes - to strømmer for overføring av lyden (en i hver retning) og to strømmer for overføring av videoen (igjen, en i hver retning). Men mange populære kodeteknikker - inkludert MPEG 1 og MPEG 2 - bundler lyden og videoen til en enkelt strøm under kodingsprosessen. Når lyden og videoen er samlet av koderen, blir det bare en RTP-strøm generert i hver retning.
+
+RTP multicast-strømmer som tilhører sammen, for eksempel lyd- og videostrømmer som kommer fra flere avsendere i et videokonferanseprogram, tilhører en **RTP-økt**.
+
+##### RTP Packet Header Fields
+
+Som vist i Fgur 7.11 er de firehoved RTP-headerfeltene payloadtype, sekvensnummer, tidsstempel og kildeindentifikasjonsfelt.
+
+![RTP-format](https://i.imgur.com/usYZWBq.png)
+
+Payloadtype-feltet i RTP-pakken er 7 bits lang, som ingidkerer typen koding (f.eks. PCM, adaptiv delta modulering osv.) Dersom en sender endrer enkodingen underveis i en økt kan senderen informere mottakeren om dette ved å endre payloadtype-feltet. Tabell 7.2  og Tabell 7.3 i boken viser noen av lyd-payloadtypene og video-payloadtypene som støttes av RTP. 
+
+De andre viktige feltene er:
+
+* *Sekvensnummerfelt.* Sekvensnummerfeltet er 16 bit langt. Sekvensnummeret inkrementerer med en for hver RTP-pakke sendt og kan brukes av mottakeren til å detektere pakketap og fikse pakkesekvensen. Dersom en mottaker ser at det er et hull i sekvensnumrene fra 86 til 89, da vet mottakeren at pakke 87 og 88 er borte. Da kan mottakeren prøve å skjule den tapte dataen. 
+* *Timestamp field.* Tidsstempel-feltet er 32 bit langt. Den reflekterer prøveuttaket for den første byten i RTP-datapakken. Som vi så i forrige avsnitt, kan mottakeren bruke tidsstempler for å fjerne pakkejitter introdusert i nettverket og å sørge for synkron avspilling på mottakeren. Klokkeslettet er avledet fra en sample-klokke hos avsenderen.
+* *Synchronization source identifier (SSRC)*. SSRC feltet er 32 bits langt. Den identifiserer kilden til RTP-strømmen. Typisk har hver strøm i en RTP-økt en distinkt SSRC. SSRC-en er ikke IP-adressen til senderen, men istedet et tilfeldig nummer som kilden lager når strømmen startes. Sannsynligheten for at to strømmen får samme SSRC er veldig liten, og skulle det skje velger de to kildene en ny SSRC-verdi. 
+
+
+
+<br></br>
+<a name="kap8"></a>
+## Kapittel 8 - Security in Computer Networks
+
+Vi skal nå se på hvordan man kan sikre nettverk fra internettangrep som malware attacks, denial of service, sniffing, source masquerading, og message modification og sletting. La oss introdusere Alice og Bob, to personer som vil kommunisere, og ønsker å gjøre det *sikkert*. 
+
+I første del av dette kapitlet skal vi dekke de grunnleggende kryptografiteknikkene som tillater kryptering av kommunikasjon, autentisering av partiet med hvem man kommuniserer og sikrer meldingsintegritet.
+I den andre delen av dette kapitlet skal vi undersøke hvordan de grunnleggende kryptografiprinsippene kan brukes til å lage sikre nettverksprotokoller.
+I tredje del av dette kapitlet skal vi vurdere operativ sikkerhet, som handler om å beskytte organisasjonsnettverk mot angrep.
+
+
+### What Is Network Security?
+
+Hva betyr det at noe er sikkert? Alice vil at kun Bob skal kunne forstå meldingen hun har hendt, selvom de kommuniserer over et *usikkert* medium hvor en intrenger (Trudy, the intruder) muligens fanger opp det som blir sendt fra Alice til Bob. Bob ønsker også at meldinger han mottar fra Alice, faktisk var fra Alice, og Alice ønsker at den personen hun kommuniserer med faktisk er Bob. Alice og Bob ønsker også at innholdet i meldingene deres ikke endret i overføringen. De ønsker også at de kan være garanert å kommunisere (at ingen nekter dem å kommunisere). Gitt disse vurderingene kan vi identifisere følgende ønskelige egenskaper for **sikker kommunikasjon**.
+
+* *Confidentiality.* Kun sender og tiltenkt mottaker skal kunne forstå innholdet i overførte melding. Da "eavesdroppere" kan fange opp meldingene er det viktig at meldingen er kryptert slik at kun mottakeren kan forstå innholdet. Dette aspektet av konfidensialitet er det vanligste oppfattet som meningen med *sikker kommunikasjon.* 
+
+* *Message integrity.* Alice og Bob ønsker at innholdet i meldingen ikke blir endret på, enten av skadelige intensjoner eller uhell, i overføringen. Utvidelser til checksum-teknikker kan hjelpe på slik meldingsintegritet. 
+
+* *End-point authentication.* Både sender og mottaker skal kunne bekrefte identiteten sin til de andre deltakerene i kommunikasjonen. Når en bruker ønsker å få tilgang på en innboks, hvordan autentiserer mailserveren brukeren som den personen han eller hun sier at de er? 
+
+* *Operational security.* Nesten alle organisasjoner (selskaper, universiteter osv) i dag har nettverk som er koblet til et offentlige internettet. Disse internettene kan derfor potentielt bli kompomitteres. Angripere kan forsøke å plassere worms i vertene i nettverket, skaffe bedriftshemmeligheter, karlegge de interne nettverkskonfigurasjonene, og starte DoS-angrep. 
+
+
+
+![8.1](https://i.imgur.com/r0EBYXN.png)
+
+
+
+Etter å ha etablert hva vi mener med nettverkssikkerhet, kan vi se på nøyaktig hva slags informasjon som en inntrenger har tilgang til, og hva inntrengeren kan gjøre med det. Figur 8.1 viser et scenario der Alice, senderen, vil sende data til Bob, mottakeren. For å utveksle data sikkert, mens de møter kravene om konfidentialitet, endepunkt autentisering og meldingsintegritet, vil Alice og Bob utveksle kontrollmeldinger og datameldinger (på samme måte som TCP-sendere og mottakere utveksler kotrollsegmenter og datasegmenter).  Alle eller noen av disse meldingene blir vanligvis kryptert. Som diskutert i Kap. 1, kan en inntrenger potensielt utføre
+
+* *eavesdropping* - sniffe eller opptak av kontroll- og data-meldinger på en kanal
+* *modification, insertion, or deletion* av meldinger eller meldingsinnhold.
+
+Som vi ser, med mindre de nødvendige mottiltak blir gjort, tillater dette inntrengerne å utføre et bredt spekter av sikkerhetsangrep: snooping på kommunikasjon (muligens å stjele passord og data), utgjøre seg for å være en annen, kapre en pågående økt, nekte tjenesten å legitimerte nettverksbrukere ved å overbelaste systemressurser, og så videre.
+
+
+La oss nå se på kryptgrafi. Selvom bruken av kryptografi i å gi konfidensialitet er selvsagt, ser vi snart at det også er sentralt for å gi kryptering til endepunktsautentisering og meldingsintegritet, som gjør kryptografi til en av hjørnestenene i nettverkssikkerhet.
+
+
+### Principles of Cryptography
+
+Kryptografiteknikker tillater en sender forkle/disguise data slik at en inntrenger ikke kan få noen informasjon fra den mottatte dataen. Mottakeren må selvfølgelig hente den originale dataen fra den krypterte dataen. Figur 8.2 viser noen viktige terminologier. 
+
+La oss anta at Alice bil sende Bob en melding. Alice sin melding i sin originale form (f.eks. "Bob, jeg elsker deg. Alice") er kjent som **plaintext** eller **klartekst**. Alice krypterer klartekst-meldingen med en **krypteringsalgoritme** slik at den krypterte meldingen, kjent som **ciphertekst**, ser uleselig ut for en inntrenger. I mange moderne kryptografiske systemer, inkludert de brukt av internettet, er selve krypteringsteknikken kjent, publisert og standardisert og tilgjengelig for alle. 
+
+![8.2](https://i.imgur.com/F9eD8C9.png)
+
+Klart, dersom alle kjenner metoden for kryptering, må det være noen hemmelig informasjon som hindrer en intrenger fra å dekryptere overført data. Det er her nøkler kommer inn. I Figur 8.2 gir Alice en **nøkkel**, *K<sub>A</sub>*, en string med tall eller bokstaver som input til krypteringsalgoritmen. Krypteringsalgoritmen tar nøkkelen og klartekst-meldingen, *m*, som input og produserer ciphertekst som output. Notasjonen *K<sub>A</sub>*(*m*) refererer til ciphertekst-formen av klarteksten *m*. Likt vil Bob gi en nøkkel, *K<sub>B</sub>* til **dekrypteringsalgoritmen** som tar cipherteksten og gjør den om til klartekst. Så dersom Bob får en kryptert tekst *K<sub>A</sub>*(*m*), dekrypterer han den ved å kalkulere *K<sub>B</sub>*(*K<sub>A</sub>*(*m*)) = *m*. 
+
+* I et **symmetrisk nøkkelsystem** har både Alices og Bobs nøkler identiske og hemmelige. 
+* I et **offentlig nøkkelsystem** (*eng. public*) er par av nøkler brukt. Den ene nøkkelen er kjent av både Bob og Alice (ja, den er kjent for hele verden). Den andre nøkkelen er det kun kjent av enten Bob eller Alice (men ikke begge)
+
+
+#### Symmetric Key Cryptography
+
+Før vi ser på de moderne krypteringsalgoritmene, kan vi se på en veldig gammel og enkel krypteringsalgoritme - kjent som **Caesar cipher**. 
+
+For engelsk tekst, fungerer Caesar-cipheren slik at den tar hver bokstav i klartekst-meldingen, og erstatter den med bokstaven som kommer *k* bokstaver senere (som tillater sykler, dvs. *z* blir fulgt av *a*). For *k* = 3, da blir *a* i klartekst *d* i ciphertekst, *b* i klatekst blir *e* i ciphertekst osv  osv. Det ville ikke ta lang tid å cracke denne koden, da det kun er 25 mulige verdier (i det engelske alfabetet). 
+
+En forbedring til Caesar-cipheren er **monoalphabetic cipher**, som erstatter en bokstav i alfabetet med en annen bokstav i alfabetet. Imidlertid, i stedet for å erstatte i henhold til et vanlig mønster (for eksempel, erstatning med en offset for *k* for alle bokstaver), kan et enhver bokstav erstattes av et hvilken som helst annen bokstav, så lenge hver bokstav har en unik ssubstitusjonsbokstav og vice versa. Substitusjonsregelen i figur 8.3 viser en mulig regel for koding av ren tekst. Her vil *a* i klartekst gir *m* i ciphertekst, *b* i klartekst gi *n* i ciphertekst. Kan lett løses med brute-force.
+
+![8.3](https://i.imgur.com/WoQjq6q.png)
+
+Når man vurderer hvor lett det kan være for Trudy å bryte Bob og Alices kryptering, kan man skille tre forskjellige scenarioer, avhengig av hvilken informasjon inntrengeren har.
+
+* *Ciphertext-only attack.* I noen tilfeller kan inntrengeren bare ha tilgang til den oppfangede cipherteksten, uten noen viss informasjon om innholdet i rentekstmeldingen. Vi har sett hvordan statistisk analyse kan hjelpe i et kryptert-tekst-eneste angrep på en krypteringsordning.
+* *Known-plaintext attack.* Dersom Trudy på en måte *vet* at "bob" eller "alice" dukker opp i ciphertekst-meldingenDa kunne hun ha bestemt (plaintekst, ciphertekst) parringer for bokstavene *a, l, i ,c, e, b* og *o*. Når en inntrenger vet noen av parringene, kaller vi dette et **known-plaintext attack** på krypteringsordningen.
+* *Chosen-plaintext attack.* I et **chosen-plaintext attack**, er inntrenger i stand til å velge plaintext-meldingen og få den tilhørende krypteringsformularen. For de enkle krypteringsalgoritmene vi har sett så langt, kan Trudy få Alice til å sende meldingen: The quick brown fox jumps over the lazy dog”, kunne hun helt bryte krypteringsskjemaet. Vi ser snart at for mer sofistikerte krypteringsteknikker betyr et chosen-plaintext-angrep ikke nødvendigvis at krypteringsteknikken kan brytes.
+ 
+
+For fem hundre år siden, ble teknikker for å forbedre monoalfabetisk krypterings oppfunnet, kjent som **polyalphabetic encryption**. Ideen bak denne krypteringen er å bruke flere monoalfabetiske ciphere, med et bestemt monoalfabetisk cipher for å kryptere en bokstav på en spesifikk posisjon i plaintekst-meldingen. 
+Et eksempel på en polyalfabetisk krypteringsskjema er vist i figur 8.4. Der det har blitt valgt to Caesar ciphere, C<sub>1</sub> og C<sub>2</sub>, i det repeterende mønsteret C<sub>1</sub>, C<sub>2</sub>, C<sub>2</sub>, C<sub>1</sub>, C<sub>2</sub>. Dvs. første bokstav bruker C<sub>1</sub>, andre bruker C<sub>2</sub>, tredje bruker C<sub>2</sub>, fjerde bruker C<sub>1</sub> og femte bruker C<sub>2</sub>. 
+
+![8.4](https://i.imgur.com/hSvXh8l.png)
+
+I dette eksemplet er krypterings- og dekrypteringsnøkkelen kunnskapen om de to Caesar-nøklene (k = 5, k = 19) og mønsteret C1, C2, C2, C1, C2.
+
+
+##### Block Ciphers 
+
+La oss nå se på litt mer moderne tider, og se på hvordan symmetrisk-nøkkel kryptering skjer idag. Det er to store klasser av symmetriske krypteringsteknikker: **stream ciphers** og **block ciphers**. Vi skal nå i dette avsnittet fokusere på blockciphere, som blir brukt i mange sikre internettprotokoller, som PGP (sikker epost), SSL (sikre TCP-tilkoblinger) og IPsec (for å sikre nettverkslagstransport). 
+
+I en blockcipher er meldingen som skal bli kryptert prosessert i blokker av *k* bits. For eksempel *k* = 64, da blir meldingen delt inn i 64-bit blokker, og hver blokk blir kryptert uavhengig av heverandre. Får å kryptere en blokk, bruker cipheren er en-til-en mapping for å mappe de *k*-bit blokkene med klartekst til en *k*-bit blokk med ciphertekst. 
+
+Så la oss se på et eksempel. La *k* = 3, slik at blokkcipheren mapper 3-bit input til 3-bit output. en mulig mapping er gitt i Tabell 8.1. Legg merke til at det er en en-til-en mapping. Blokkcipheren deler da altså opp plainteksten i deler på 3 bits. Du kan da bekrefte at meldingen 010110001111 blir kryptert til 101000111001.
+
+For å brute force denne krypteringsskjemaet, kan kjapt bli gjort på en vanlig PC. Dersom *k* = 3, vil man ha 2<sup>3</sup> mulige inputs. Disse 8 inputtene kan bli permutert på 8! = 40,320 forskjellige måter. Det er ikke så mange kombinasjoner å gjøre på en datamaskin.
+
+For å unngå brute-force-angrep, bruker blokkciphers vanligvis mye større blokker, som består av *k* = 64 bits eller enda større. Merk at antall mulige mappings for en generell k-blokk-kryptering er 2<sup>k</sup>!, Som er 
+er astronomiske for selv moderate verdier av k (som k = 64).
+
+Selv om blokkcipheren, som ble beskrevet, med moderate verdier av k kan produsere robuste symmetriske nøkkel krypteringsordninger, er de dessverre vanskelig å implementere. For k = 64 og for en bestemt mapping, ville Alice og Bob måtte vedlikeholde et bord med 264 inngangsverdier, noe som er en uopprettelig oppgave. Videre, hvis Alice og Bob skulle bytte nøkler, måtte de hver for seg regenerere bordet.
+
+I stedet bruker blokkciphere vanligvis funksjoner som simulerer tilfeldig permuterte tabeller. Et eksempel av en slik funksjon for k = 64 bits er vist i figur 8.5. Funksjonen bryter først en 64-bit blokk i 8 biter, med hver brikke som består av 8 bits. Hver 8-bits chunk behandles av en 8-bits til 8-bits tabell, som er av brukbar størrelse. For eksempel behandles den første klumpen ved tabellen betegnet av T1. Deretter monteres de 8 utgangsstykkene i en 64-biters blokk. Posisjonene til de 64 bitene i blokken blir deretter scramblet (permutert) for å produsere en 64-bits utgang. Denne utgangen blir gitt tilbake til 64-bits inngangen, hvor en annen syklus begynner. Etter *n* slike sykluser, gir funksjonen en 64-biters blokk med ciphertekst. Formålet med rundene er å få hver inngangsbbit å påvirke de fleste (om ikke alle) de endelige utgangsbitene. (Hvis bare en runde ble brukt, ville en gitt inngangsbbit bare påvirke 8 av 64 utgangsbitene.) Nøkkelen for denne blokk-krypteringsalgoritmen ville være de åtte permutasjonstabellene (forutsatt at scramble-funksjonen er offentlig kjent).
+
+![8.5](https://i.imgur.com/WqDn9QU.png)
+
+##### Cipher-Block Chaining
+
+I nettverksapplikasjoner må vi gjerne kryptere lange meldinger (eller lange strømmer med data). Dersom vi bruker en blockcipher beskrevet over ved å dele opp meldingen i *k*-bit blokker og uavhengig kryptert hver blokk. Dersom to plaintext blokker er like, som f.eks. "HTTP/1.1", ville begge blokkene blitt kryptert til den samme cipherteksten. 
+
+For å fikse dette problemet kan vi legge til litt tilfeldighet i cipherteksten slik at to identiske plaintekst-blokker produserer same ciphertekst blokk. 
+Vi betegner block-cipherkrypteringsalgoritmen med nøkkel *S* som *K<sub>S</sub>*. Vi betegner *m(i)* den *i*'te plaintekst-blokken, og *c(i)* den *i*'te ciphertekstblokken. 
+
+* Senderen lager en random *k*-bit tall *r(i)* for den *i*'te blokken og kalkulerer *c(i)* = *K<sub>S</sub>(m(i) ⨁ r(i))*. Det regnes ut et nytt tilfeldig tall for hver blokk. Senderen sender *c(1), r(1), c(2), r(2), c(3), r(3)*, osv. Sideeen mottakeren mottar *c(i)* og *r(i)* kan den kalkulere plaintekst-blokken ved å regne ut *m(i)* = *K<sub>S</sub>(c(i)) ⨁ r(i)*.
+
+
+Den stakkars leseren vil merke seg at innføring av tilfeldighet løser et problem, men skaper et annet: nemlig, Alice må overføre dobbelt så mange biter som før. Faktisk, for hver krypteringsbit må hun nå også sende en tilfeldig bit, dobling av nødvendig båndbredde. For å få det som vi vil, bruker blockciphers vanligvis en teknikk kalt **Cipher Block Chaining (CBC)**. Den grunnleggende ideen er å sende *bare en tilfeldig verdi sammen med den aller første meldingen, og så har avsenderen og mottakeren bruk de beregnede chipherblokkene i stedet for det etterfølgende tilfeldige tallet. Spesifikt opererer CBC som følger:
+
+1. Før man krypterer meldingen lager senderen en tilfeldig *k*-bit streng , kalt  **Initialization Vector (IV)**. La oss betegne denne vektoren som *c(0)*. Senderen sender IV i klartekst til mottakeren. 
+2. For den første blokken regner senderen ut *c(1)* = *K<sub>S</sub>(m(1) ⨁ c(0))*. Senderen sender den krypterte blokken *c(1)* til mottakeren. 
+3. For den *i*'te blokken gerenerer senderen den *i*'te cipherblokken fra *c(i)* = *K<sub>S</sub>(m(i) ⨁ c(i-1))*
+
+
+Mottakeren får meldingen i klartekst ved å kalkulere *m(i)* = *K<sub>S</sub>(c(i)) ⨁ c(i-1))*
+
+#### Public Key Encryption
+
+Vi ser snart at offentlig-nøkkel kryptografisystemer også har flere fantastiske egenskaper som gjør dem nyttige ikke bare for kryptering, men også for autentisering og digitale signaturer. 
+
+Bruken av offentlig-nøkkel kryptografi er konseptuelt veldig enkelt. Anta at Alice ønsker å kommunisere med Bob. Som vist i Figur 8.6, istedet for at Bob og Alice deler en felles hemmelig nøkkel, så har Bob (mottakeren) to nøkler  - en **offentlig** nøkkel som er tilgjengelig for alle i verden og en **privat** nøkkel som kun Bob vet om. 
+
+* Vi bruker notasjonen *K<sub>B</sub><sup>+</sup>* og *K<sub>B</sub><sup>-</sup>* for å referere til Bobs offentlige og private nøkler.
+* For å kommunisere med Bob, henter Alice først Bobs offentlige nøkkel. Alice krypterer deretter hennes melding, *m*, til Bob ved hjelp av Bobs offentlige nøkkel og en kjent (for eksempel, standardisert) krypteringsalgoritme; det vil si, Alice beregner *K<sub>B</sub><sup>+</sup>(m)*. Bob mottar Alices krypterte melding og bruker sin private nøkkel og en kjent (for eksempel standardisert) dekrypteringsalgoritme for å dekryptere Alices krypterte melding. Det vil si, Bob beregner *K<sub>B</sub><sup>-</sup>(K<sub>B</sub><sup>+</sup>(m))*.
+
+Vi skal snart se at man få den offentlig og private nøkkelen slik at *K<sub>B</sub><sup>-</sup>(K<sub>B</sub><sup>+</sup>(m))* = *K<sub>B</sub><sup>+</sup>(K<sub>B</sub><sup>-</sup>(m))* = *m*.
+
+
+Det er klart at hvis offentlig nøkkelkryptografi skal fungere, må nøkkelvalg og kryptering / dekryptering gjøres på en slik måte at det er umulig (eller nærmest umulig) for en inntrenger å enten avgjøre Bobs private nøkkel eller på annen måte dekryptere eller gjette Alices melding til Bob. 
+
+Et annet problem er at siden Bobs krypteringsnøkkel er offentlig, kan alle sende en kryptert melding til Bob, inkludert Alice eller noen som *hevder* å være Alice. I tilfelle der man har en enkelt felles hemmelig nøkkel, identifiserer det faktum at avsenderen kjenner den hemmelige nøkkelen indikerer implisitt hvem senderen er til  mottakeren. I tilfelle av offentlig nøkkel kryptering, er dette imidlertid ikke lenger tilfelle, siden alle kan sende en kryptert melding til Bob ved hjelp av Bobs offentlige nøkkel. En digital signatur, et emne vi skal  se på nå, er nødvendig for å binde en avsender til en melding.
+
+
+### Message Integrity and Digital Signatures
+
+I dette avsnittet skal vi se på en viktig del av kryptografi, som er å tilby **meldingsintegritet** - også kjent som meldingsautentisering. Sammen med meldingsintegritet, skal vi se på to relaterte temaer: digitale signaturer og ende-punkts-autentisering. 
+
+Vi defienerer meldingsintegritetsproblemet en gang til. Anta at Bob mottar en melding (kanskje kryptert eller i plaintekst) og han tror at meldingen har blitt sendt fra Alice. For å autentisere denne meldingen må Bob verifisere:
+
+1. Meldingen ble faktisk sendt fra Alice
+2. Meldingen ble ikke endret eller tullet med på sin vei til Bob. 
+
+#### Cryptographic Hash Functions
+
+En hashfunksjon tar inn et input *m*, regner ut en fikset lengde streng *H(m)*, kjent som en hash. Internet checksummen og CRC-er treffer denne definisjonen. En kryptografisk hashfunksjon krever for å ha følgende egenskap:
+
+* Det er umulig å finne to forskjellige meldinger *x* og *y* slik at *H(x)* = *H(y)*. 
+
+Uformelt betyr denne egenskapen at det er beregningsmessig umulig for en inntrenger å erstatte en melding for en annen melding som er beskyttet av hash-funksjonen. Det vil si at hvis (*m*, *H(m)*) er meldingen og hashen av meldingen "forge"/fikse innholdet i en annen melding, *y*, som har samme hashverdi som den opprinnelige meldingen.
+
+* Dersom vi bruker vanlig checksum ser vi at "IOU100.99BOB" gir samme checksum som "IOU900.19BOB", og dette kan vi ikke ha noe av i en kryptografisk hashfunksjon. 
+
+
+MD5 funksjonen som i 2011 ble brukt mye, regner ut en 128-bit hash i en firestegs prosess bestående av en et paddingsteg (legge til en 1 og deretter nok 0-ere til å dekke et lengdekrav), et append-steg (legge til en 64-bit representasjon av meldingslengden før padding), en initialisering av en accumulator og en siste loopingsteg der meldingens 16-ords-blokker blir prosessert i fire runder. 
+
+En annen stor hashefunksjon brukt i 2011 er Secure Hash Algorithm (SHA-1). DEnne algoritmen er basert på lignende prinsipper brukt i MD4. Outputlengden i SHA-1 er lengre enn MD5, og mer sikker. I dag brukes en nyere versjon som here SHA-256, som er enda sikrere.
+
+#### Message Authentication Code
+
+La oss nå gå tilbake problemet med meldingsintegritet. Nå som vi har skjønt hashfunksjoner, kan vi se på hvordan man utfører meldingsintegritet. 
+
+1. Alice lager en melding *m* utregner hashen *H(m)*
+2. Alice legger så til *H(m)* til meldingen *m*, altså lager en utvidet melding (*m*, *H(m)*), og sender denne til Bob.
+3. Bob mottar den utvidede meldingen (*m*, *h*) og regner ut *H(m)*. Dersom *H(m)* = *h*, konkluderer Bob med at alt er bra. 
+
+For å utrøfre meldingsintegritet i tillegg til å bruke en kryptografisk hashfunskjon, trenger Alice og Bob en delt hemmelighet *s*. Denne delte hemmeligheten er ikke noe mer enn en streng med bits, kalt en **autentiserings nøkkel**. Ved å bruke denne delte hemmeligheten, kan meldingsintegritet utføres slik:
+
+1. Alice lager melding *m*, setter sammen *s* med *m* for å opprette *m* + *s*, og beregner hashen *H(m + s)* (for eksempel med SHA-1). *H(m + s)* kalles **message authentication code-en (MAC)**.
+2. Alice legger så til MAC-en til meldingen *m*, altså lager en utvidet melding (*m*, *H(m + s)*), og sender denne til Bob. 
+3. Bob mottar den utvidede meldingen (*m, h*), og vet *s*. Han regner så ut MAC-en *H(m + s)*. Dersom *H(m + s)* = *h*, konkluderer Bob med at alt er bra. 
+
+Oppsummering av denne prosedyren finner du i figuren under.
+
+![8.9](https://i.imgur.com/hfPgqjf.png)
+
+
+#### Digital Signatures
+
+Vi signerer idag kontrakter, regninger, kvitteringer og brev i den ekte verden. Signaturen din attesterer at det faktisk er deg, og ingen andre, som bekrefter det du skriver under på. I en digital verden ønsker man ofte å indikere eieren eller skaperen av et dokument, eller å signere ens enighet til et dokuments innhold. En **digital signatur** er en kryptografisk teknikk for å oppnå disse kravene i den digitale verden. La oss nå nå se på hvordan vi kan designe en digital signatursskjema. Observer at når Bob signerer en meldingen, putter Bob noe i meldingen som er unik for han. Bob kan overveie å legge ved en MAC for signature, hvor MACen er laget ved å legge til nøkkelen hans (unik for han) til meldingen, får så å ta hashen. Men for at Alice skal kunne verifisere signaturen må hun også ha en kopi av nøkkelen, som gjør at nøkkelen ikke lenger er unik for Bob. Dermed kan ikke MAC-er brukes til digitale signaturer.
+
+Husk at med offentlig-nøkkel kryptografi, har Bob både en offentlig og en privat nøkkel, der begge nøklene er unike for Bob. Anta at Bob ønsker å digital signere et dokument, *m*. Vi kan tenke på dokumetet som en fil eller en melding som Bob skal signere og sende. Som vist i Figur 8.10, for signere dokumentet, bruker Bpb den private nøklen sin *K<sub>B</sub><sup>-</sup>* for å regne ut *K<sub>B</sub><sup>-</sup>(m)*. Det kan virke merkelig at Bob skal bruke sin private nøkkel, når vi akkurat så ble brukt for å dekryptere en melding (som hadde blitt kryptert med hans offentlige nøkkel), til å signere et dokument. Bobs digitale signatur av dokumentet er *K<sub>B</sub><sup>-</sup>(m)*.
+
+
+![8.10](https://i.imgur.com/qDSZBF8.png)
+
+
+Men møter den digitale signaturen *K<sub>B</sub><sup>-</sup>(m)* kravene våre om å være verifiserbar og ikke-forfalskbar? Anta at Alice har *m* og *K<sub>B</sub><sup>-</sup>(m)*. Hun ønsker å bevise at Bob faktisk har signert dokumentet. Alice tar Bob sin offentlige nøkkel *K<sub>B</sub><sup>+</sup>(K<sub>B</sub><sup>-</sup>(m))*, som gir *m*, og har dermed på følgende grunnlag for å bevise at Bob sendte meldingen:
+
+* Den som signerte meldingen må ha den private nøkkelen,  *K<sub>B</sub><sup>-</sup>*,for å regne ut signaturen  *K<sub>B</sub><sup>-</sup>(m)*, slik at *K<sub>B</sub><sup>+</sup>(K<sub>B</sub><sup>-</sup>(m))* = *m*.
+
+* Den eneste personen som kjenner den private nøkkelen *K<sub>B</sub><sup>-</sup>*, er Bob. 
+
+Det er også viktig å notere seg at dersom det originale dokumentet, *m*, blir modifisert til et alternativ, *m'*. Så vil ikke signaturen til Bob, lagd for *m*, gjelde for *m'*.
+
+* En bekymring med å signere data ved kryptering er at kryptering og dekryptering er beregningsmessig dyrt. Gitt overheadene for kryptering og dekryptering kan signaturdata via fullstendig kryptering / dekryptering være overkill. 
+
+* En mer effektiv tilnærming er å introdusere hashfunksjoner i den digitale signaturen. Husk at en hashalgoritme tar en melding, *m*, med vilkårlig lengde og beregner et fast lengde "fingeravtrykk" av meldingen, betegnet med *H(m)*. Bob signerer hashen i stedet for selve meldingen, det vil si at Bob beregner KB-  *K<sub>B</sub><sup>-</sup>(H(m))*. Siden *H(m)* generelt er mye mindre enn den opprinnelige meldingen *m*, reduseres den beregningsmessige oppgaven som kreves for å skape den digitale signaturen betydelig.
+
+Figur 8.11 gir en oppsummering av de operasjonsprosedyrene ved å lage en digital signatur. 
+
+![meldingsintegritet-sender](https://i.imgur.com/QumBO88.png)
+
+![meldingsintegritet-mottaker](https://i.imgur.com/TuQ8j19.png)
+
+> En digital signatur er en tyngre teknikk, enn MAC, da den krever en underliggende Public Key Intrastructure (PKI) med sertifiseringsautoriteter som beskrevet under.
+
+##### Public Key Certification
+
+En viktig anvendelse av digitale signaturer er **public key certification**, det vil si at en offentlig nøkkel tilhører en bestemt enhet. Offentlig-nøkkel-sertifisering brukes i mange populære sikre nettverksprotokoller, inkludert IPsec og SSL.
+
+For å se på dette problemet kan vi se på en Internet-handel versjonen av den klassiske "pizza pranken". Alice jobber med pizzaleveranse og tar imot bestillinger over nett. Bob sender Alice en plaintekst-melding som inkluderer adressenhans og type pizza han ønsker. I denne meldingen inkluderer Bob også en digital signatur (det vil si en signert hash av den opprinnelige tekstmeldingen) for å bevise for Alice at han er den sanne kilden til meldingen. For å verifisere meldingen bruker Alice Bob sin offentlige nøkkel og skjekker den digitale signaturen. Slik skjekker hun at det er Bob, og ikke en prankster, som har sendt ordren. 
+
+Dette er fint helt til Trudy kommer. Som vist i Figur 8.13 skal Trudy pranke Bob og Alice. Hun sender en melding til Alice, der hun sier at hun er Bob, gir Bobs hjemadresse, og bestiller en pizza. I meldingen legger hun også til hennes (Trudy's) offentlige nøkkel, og Alice antar naturlig at dette er Bobs offentlige nøkkel. Trudy legger også til en digital signatur med sin egen privat enøkkel. Når Alice mottar meldingen, bruker hun Trudys offentlige nøkkel (Tror det er Bobs) på den digitale signaturen, og konkluderer med at klartekstmeldingen ble laget av Bob. Hun leverer så pizza hos Bob. What a prankster!
+
+![8.13](https://i.imgur.com/q6IZNpi.png)
+
+
+Vi skal nå se på eksempel at for at offentlig-nøkkel kryptografi skal være nyttig, må man kunne verifisere at man faktisk har den offentlige nøkkelen til en entitet (person, ruter, browser, osv.) til dem man kommuniserer med. For eksempel når Alice ønsker å kommunisere med Bob ved å bruke offentlig-nøkkel kryptografi, trenger hun å verifisere at den offentlige nøkkelen som tilsynelatende skal være Bobs faktisk er Bobs. 
+
+Å knytte en offentlig nøkkel til en bestemt entitet er typisk gjort av en **Certification Authority (CA)**, som skal validere identiteten og gi ut sertifikater. En CA har følgende roller:
+
+1. En CA verifiserer at en entitet er den som den sier at den er. Det er ingen bestemte metoder for hvordan sertifisering av en entitet skal gjøres. Altså kan man stole på identiteten knyttet til en offentlig nøkkel, kun i den grad man kan stole på en CA og dens identifikasjonsverifiseringsteknikker.
+2.  Når en CA verifiserer identiteten til entiteten, lager CA-en et **sertifikat** som binder den offentlige nøkkelen til entitetens identitet. Sertifiktatet inneholder den offentlige nøkkelen og global unik identifikasjonsinformasjon om eieren til den offentlige nøkkelen (f.eks. et navn eller en IP-adresse.) Sertifikatet er så digitalt signert av CA-en. 
+
+
+![CA](https://i.imgur.com/36gMyqN.png)
+
+### Securing E-Mail
+
+Vi skal nå se på hvordan verktøyene vi nå har sett på kan bli brukt for å tilby sikkerhet i internettet. Det er mulig å tilby sikkerhetstjenester til alle de fire øverste lagene i internettprotokollstakken. Når sikkerhet er tilbudt av transportlaget, vil alle applikasjoner som bruker den protokollen kunne bruke sikkerhetstjenestene til transportprotokollen. Når sikkerhet er tilbudt av nettverkslaget på en vert-til-vert-basis, vil alle transportlagssegmenter (og dermed alle applikasjonslagsdata) nyte sikkerhetstjenestene til nettverkslaget. Når sikkerhet tilbys på en linkbasis, vil all data i rammene reisenede over koblingen motta sikkerhetstjenestee til linken. 
+
+Du lurer kanskje på hvorfor sikkerhetsfunksjonalitet blir levert på mer enn ett lag på Internett. Ville det ikke bare være å gi sikkerhetsfunksjonaliteten på nettverkslaget og bli ferdig med det? Det er to svar på dette spørsmålet.
+
+* For det første, selv om sikkerhet i nettverkslaget kan tilby "blanket coverage" (forsikring som dekker hus, men samtidigt også møblene inni) ved å kryptere alle dataene i datagrammer (det vil si alle transportsegmentene) og ved å autentisere alle kilde-IP-adressene, kan det ikke gi brukernivå sikkerhet. For eksempel kan et handelsnettsted ikke stole på IP-lagssikkerhet for å godkjenne en kunde som kjøper varer på handelsstedet. Dermed er det behov for sikkerhetsfunksjonalitet ved høyere lag samt "blanket coverage" på lavere lag. 
+* For det andre er det generelt lettere å distribuere nye Internett-tjenester, inkludert sikkerhetstjenester, i de høyere lagene i protokollstakken.
+
+> Istedet for å vente på at sikkerhets skal bli implementert i nettverkslaget, som det nok er noen år til, vil mange applikasjonsutviklere bare gjør det selv og introdusere sikkerhetsfunksjonaltet i applikasjonene sine. Et eksempel på dette er Pretty Good Privacy (PGP) som tilbyr sikker epost. Som kun trengte klient- og serverprogramkode var PGP en av de første sikkerhetsteknologiene som i stor grad ble brukt på Internett. Krevende kun klient- og serverprogramkode var PGP en av de første sikkerhetsteknologiene som i stor grad ble brukt på Internett.
+
+
+#### Secure E-Mail
+
+Vi skal nå bruke kryptografiske prinsipper fra tidligere avsnitt for å lage et sikkert epost-system. Når vi nå designer et sikkert epostsystem, kan vi tenke oss eksempelet med kjærlighetsaffæren mellom Alice og Bob. Se for deg at Alice vil sende en epost til Bob, og Trudy vil inntrenge. 
+
+* Den første egenskapen vi vil ha **konfidensialitet** - både Alice og Bob ønsker at ingen (spesielt Trudy) skal kunne lese epostmeldingene de forveksler. 
+* Den andre egenskapen vi vil ha i det sikre epostsystemet vårt er **sender autentisering**. Spesielt, når Bob mottar meldingen *"I don’t love you anymore. I never want to see you again. Formerly yours, Alice"*, vil han naturligvis være sikker på at meldingen kom fra Alice, og ikke Trudy. 
+* En annen egenskap vi vil ha er **meldingsintegritet**, det vil si en forsikring på meldingen Alice sender ikke blir modifisert på veien til Bob. 
+* Til slutt vil vi at epostsystemet vårt skal tilby **receiver authentication**, det vil si at Alice vil være sikker at det er Bob som mottar meldingen hun sender, og ingen andre. 
+
+
+La oss se på det første problemet, konfidensialitet. Den mest rett frem måten å gi konfidensialitet for Alice er å kryptere meldingene sine med en symmetrisk-nøkkel kryptografi (som DES eller AES) og for Bob å dekryptere meldingen med nøkkelen. Problemet her er da å distribuere den felles nøkkelen uten at noen andre får tak i den. Derfor ser vi på en alternativ fremgangsmåte - offentlig-nøkkel kryptografi. 
+
+I offentlig-nøkkel tilnærmingen, gjør Bob den offentlige nøkkelen sin tilgjengelig, Alice krypterer meldingen sin med Bob sin offentlige nøkkel, og sender den krypterte meldingen til Bob sin epostadresse. Når Bob mottar meldingen kan han dekryptere den med sin private nøkkel. (Antatt at Alice for sikkert vet at hun har brukt Bob sin offentlige nøkkel). Et problem er fremdeles at offentlig nøkkelkryptering er relativt ueffektivt for lange meldinger. 
+
+For å overkomme dette effektivitetsproblemet, bruker vi en *session key*. Spesielt (1) velger Alice en tilfeldig symmetrisk session key, *K<sub>S</sub>*, (2) krypterer meldingen sin, *m*, med den symmetriske nøkkelen, (3) krypterer den symmetriske nøkkelen med Bob sin offentlige nøkkel *K<sub>B</sub><sup>+</sup>*, (4) legger sammen den krypterte meldingen og den krypterte nøkkelen i en pakke, og (5) sender denne til Bobs epostadresse. Stegene er illustrert i Figur 8.19. 
+
+Når Bob mottar pakken tar han (1) å bruker sin private nøkkel, *K<sub>B</sub><sup>-</sup>* for å få den symmetriske nøkkelen *K<sub>S</sup>*, og (2) bruker denne symmetriske nøkkelen for å dekryptere meldingen *m*. 
+
+
+![8.19](https://i.imgur.com/AX2UErh.png)
+
+Etter å ha designet et sikkert epostsystem som tilbyr konfidensialitet, kan vi nå se på å designe et annet system som tilbyr både autentisering og meldingsintegritet. Vi antar, i et øyeblikk, at Alice og Bob ikke lenger bryr seg om konfidensialitet, og er kun bekymret for senderautentisering og meldingsintegritet. For å oppnå dette bruker vi digitale signaturer og meldingdigester. Spesifikt vil (1) Alice bruke en hashfunksjon *H* på meldingen sin *m*, for oppnå en meldingsdigest/hash *H(m)*, (2) signerer resultatet av hashfunksjonen med den private nøkkelen hennes, *K<sub>A</sub><sup>-</sup>*, og lager en digital signatur, og (3) setter sammen den ukrypterte meldingen sammen med signaturen til en pakke, og (4) sender pakken til Bobs epostadresse. 
+
+Når Bob mottar pakken, vil han (1) bruke Alice sin offentlige nøkkel, *K<sub>A</sub><sup>+</sup>*, på den signerte meldingsdigesten og (2) sammenligne resultatet med sin egen hash *H(m)*. Stegene er illustrert i Figur 8.20 under. 
+
+![8.20](https://imgur.com/IFMqMZd)
+
+> Som nevnt tidligere kan Bob, dersom de to resulatete er like, være sikker på at pakken kom fra Alice, og at den er uendret. 
+
+
+
+La oss nå se på å designe et epostsystem som tiilbyr konfidensialitet, sender-autentisering, *og* meldingsintegritet. Dette kan bli gjort ved å kombingere prosedyrene i Figur 8.19 og 8.20. Alice lager første en innledende pakke, som i Figur 8.20, bestående av den originale meldingen smamen med en digitalt signert hash av meldingen. Hun behandler denne pakken som en melding i seg selv, og sender denne meldingen til Bob med stegene i Figur 8.19, dvs å hashe meldingen med en symmetrisk nøkkel, og sette dette resultatet sammen med den symmetriske nøkkelen kryptert med Bob sin offentlige nøkkel. Da får vi stegene vist i Figur 8.21 under. 
+
+![8.21](https://i.imgur.com/3x5ku1a.png)
+
+> Den sikre e-postdesignen som er over, gir trolig tilfredsstillende sikkerhet for de fleste e-postbrukere ved de fleste anledninger. Men det er fortsatt et viktig problem som gjenstår å bli adressert. Utformingen i Figur 8.21 krever at Alice oppnår Bobs offentlige nøkkel, og krever at Bob skal oppnå Alice's offentlige nøkkel. Fordelingen av disse offentlige nøklene er et ikke-trivielt problem.
+> 
+> Trudy kan fortsatt late som (*masquerade*) som hun er Bob, og gi Alice sin egen offentlige nøkkel.
+> 
+> En vanlig løsning for sikker distribuering av offentlige nøkler er å *sertifisere* de offentlige nøklene ved å bruke en CA.
+
+
+### Securing TCP Connections: SSL
+
+Vi skal nå gå ned et lag i protokollstakken og se på hvordan kryptografi kan forbedre TCP med sikkerhetstjenester, inkludert konfidensialitet, dataintegritet og endepunkts-autentikasjon. Denne forbedrede versjonen av TCP er kjent som **Secure Sockets Layer (SSL)**. En litt modifisert versjon av SSL versjon 3, kalt **Transport Layer Security (TLS)**, har blitt standardisert. 
+
+Siden utviklingen av SSL har den blitt utplassert på mange sider, og er støttet på alle populære nettlesere og webservere, og brukes essensielt av alle handelsnettsteder (inkludert Amazon, eBay, Yahoo!, osv.) Det brukes masse penger på SSL hvert år. Dersom du noen gang har kjøpt noe over internettet med bankkortet ditt, har kommunikasjonen mellom nettleseren og serveren for dette kjøpet nesten helt bestemt vært gjort over SSL.
+
+> Du kan se at du bruker SSL i nettleseren din dersom URL-en begynner på *https* istedet for *http*.
+
+
+La oss ta for oss en kjøp på netthandelen, og se på hva man må ta hensyn til:
+
+* Dersom ingen konfidensialitet (kryptering) blir brukt, kan en inntregner fange Bobs ordre, og få tak i bankinformasjonen hans. En inntrenger kan da gjøre kjøp på Bobs vegne. 
+* Dersom ingen dataintegritet blir brukt, kan en inntrenger modifisere Bobs ordre, og få han til å kjøpe 10 ganger så mange enheter som han i utgangspunktet bestilte. 
+* Til slutt, dersom ingen server autentisering blir brukt, kan serveren vise Alice Incorporated sin kjente logo, når det faktisk er en side vedlikeholdt av Trudy, som har maskert seg som Alice Incorporated. Etter å ha mottat Bobs ordre, kan Trudy ta Bob sine penger å stikke. Eller så kan Trudy kjøre et identitetstyveri ved å ta Bob sitt navn, adresse og bankkortnummer.
+
+**SSL adresserer disse problemene ved å forbedre TCP med konfidensialitet, dataintegritet, server- og klientautentisering.** SSL blir ofte brukt for å tilby sikkerhet til transaksjoner som skal finne sted over HTTP. Men ettersom SSL sikrer TCP, kan det bli brukt av enhver applikasjon som kjører over TCP. SSL tilbyr en enkel Application Programmer Interface (API) med sockets, som ligner på TCPs API. Når en applikasjon ønsker å bruke SSL, må applikasjonen inkludere SSL klasser/biblioteker. Som vist i figur 8.24, selv om SSL teknisk sett ligger i applikasjonslaget, er det fra utviklerens perspektiv en transportprotokoll som gir TCPs tjenester forbedret med sikkerhetstjenester.
+
+![8.24](https://i.imgur.com/G0iVij8.png)
+
+
+
+#### The Big Picture
+
+Jeg starter med å beskrive en forenklet versjon av SSL, som lar oss se det store bildet i *hvorfor*-en og *hvordan*-en til SSL. Vi kaller denne *Nesten-SSL*. Nesten-SSL har tre faser: *handshake*, *key derivation* og *dataoverføring*. Vi skal nå se på disse tre fasene for kommunikasjonsøkter mellom en klient (Bob) og en server (Alice), der Alice har et private/offentlig nøkkelpar, og et sertifikat som binder hennes identitet til den offentlige nøkkelen henne.
+
+
+##### Handshake 
+
+Under handshakefasen, må Bob (a) etablere en TCP-tilkobling til Alice, (b) verifisere at Alice *faktisk* er Alice, og (c) sende Alice en "master secret key" som brukes av både Alice og Bob for å generere alle symmetriske nøkler de trenger for SSL-økten. Disse tre stegene vises under. 
+
+Noter at når TCP-tilkoblingen er etablert, sender Bob en hello melding til Alice. Alice responderer så med sertifikatet sitt, som inneholder den offentlige nøkkelen hennes. Bob genererer så en Master Secret (MS), krypterer MS-en med Alice sin offentlige nøkkel for å lage Encrypted Master Secret (EMS) og sender EMS-en til Alice. Alice dekrypterer EMS med den private nøkklen sin for å få MS. Etter denne fasen ved både Bob og Alice (og ingen andre) master secret-en for SSL-økten. 
+
+
+##### Key Derivation
+
+I prinsippet kan MS, som nå deles av Bob og Alice, brukes som den symmetriske øktnøkkelen for all etterfølgende kryptering og dataintegritetskontroll. Det er imidlertid generelt ansett sikrere for Alice og Bob å bruke forskjellige kryptografiske nøkler, og også å bruke forskjellige nøkler for kryptering og integritetskontroll. Dermed bruker både Alice og Bob MS til å generere fire nøkler:
+
+* E<sub>B</sub> = øktens krypteringsnøkkel for data sendt fra Bob til Alice
+* E<sub>B</sub> = øktens MAC-nøkkel for data sendt fra Bob til Alice
+* E<sub>A</sub> = øktens krypteringsnøkkel for data sendt fra Alice til Bob
+* M<sub>A</sub> = øktens MAC-nøkkel for data sendt fra Alice til Bob. 
+
+Alice og Bob genererer de fire nøklene fra MS. Dette kan bli gjort av å dele MS-en i fire nøkler (Men i *ekte* SSL, gjøres det litt mer komplisert). 
+
+
+##### Data Transfer
+
+Nå som Alice og Bob deler de samme fire økt-nøklene (E<sub>B</sub>, E<sub>B</sub>, E<sub>A</sub> og M<sub>A</sub>), kan de starte å sende sikret data til hverandre over TCP-tilkoblingen. SSL deler datastrømmen inn i *records*, legger til en MAC til hver record for integritetssjekking, og krypterer denne *record+MAC*-en. For å lage MAC-en, Gir Bob record-dataen sammen med nøkkelen M<sub>B</sub> inn i en hashfunksjon. For å kryptere pakken record+MAC, bruker Bob sin økt-krypteringsnøkkel E<sub>B</sub>. Den krypterte pakken sendes så over TCP for transport over nettet. 
+
+Vi er nå kommet en lang vei, men har fortsatt ikke sikret dataintegritet for hele meldingsstrømmen. Antatt at hvert TCP-segment innkapsles nøyaktig i en record, la oss se hvordan Alice prosesserer disse segmentene. La oss anta at Bob sender to segmenter til Alice, og at Trudy har tuklet med rekkefølgen til segmentene, TCP-sekvensnumrene til de to segmentene:
+
+1. TCP kjørende hos Alice vil tro at alt er fint, og gi de to recordene  til SSL-sublaget.
+2. SSL hos Alice vil dekryptere de to recordene
+3. SSL hos Alice vil bruke MAC-en i hver record for å verifisere dataintegirteten til hver av de to recordene. 
+4. SSL vil så gi den dekrypterte bytestrømmen av de to recordene til applikasjonslaget - men vil være i feil rekkfølge! 
+
+Et lignende scenario ville vært når Trudy fjerner et segment, eller erstatter et segment. 
+
+Løsningen på dette er å bruke sekvensnumre. SSL gjør det som følger. Bob vedligeholder en sekvensnummer-teller, som begynner på null, og inkrementerer for hver SSL-record han sender. Bob legger ikke ved et sekvensnummer i recorden selv, men når han regner ut MAC-en, inkluderer han sekvensnummeret i utregningen av MAC-en. MAC-en er nå *dataen + MAC-nøkkelen K<sub>B</sub> + det gjeldende sekvensnummeret.*
+
+##### SSL Record
+
+SSL-recorden er vist i Figur 8.26. Denne recorden består av et typefelt, lengdefelt, datafelt og MAC-felt. Noter at de første tre feltene er ukrypterte. Typefeltet indikerer om recorder er en handshake-melding eller en melding som inneholder applikasjonsdata. Den brukes også for å lukke en SSL-tilkobling. SSL hos den mottakende enden bruker lengdefeltet for å ekstrahere SSL-recordene fra den innkommende TCP-bytestrømmen. Versjonfeltet er selvforklarende. 
+
+
+![8.26](https://i.imgur.com/EQzfyFe.png)
+
+
+
+#### A More Complete Picture
+
+I forrige avsnitt så vi på *nesten-SSL*, nå skal vi se på hvordan *SSL* fungerer. 
+
+##### SSL Handshake
+
+SSL bestemmer ikke at Alice og Bob skal bruke en spesifikk symmetrisk nøkkel-algoritme, en spesifikk offentlig nøkkel-algoritme eller en spesifikk MAC. Istedet lar SSL Alice og Bob bli enige om den kryptografiske algoritmen på begynnelsen av SSL-økten under handshake-fasen. I tillegg, sender Alice og Bob hverandre engangsord til hverandre under handshaken, som brukes i lagingen av økt-nøklene (E<sub>B</sub>, E<sub>B</sub>, E<sub>A</sub> og M<sub>A</sub>). Stegene i den ekte SSL-handshaken er som følgende:
+
+1. Klienten sender en liste med kryptografiske algoritmer som den støtter, sammen med et klient-engangsord.
+2. Fra listen velger serveren en symmetrisk algoritme, en offentlig nøkkel-algoritme (f.eks. RSA), og en MAC-algoritme. Den sender valgene sine tilbake til klienten, sammen med et sertifikat og et server-engangsord. 
+3. Klienten verifiserer sertifikatet, henter serverens offentlige nøkkel, genererer en Pre-Master Secret (PMS), krypterer PMS-en med serverens offentlige nøkkel, og sender den krypterte PMS-en til serveren.
+4. Ved å bruke samme nøkkel-derivasjonsfunksjon (spesifisert av SSL-standarden) kan klienten og serveren uavhengig av hverandre lage Master Secret (MS) fra PMS-en og engangsordene. MS-en blir ås delt opp i generere to krypterings- og to MAC-nøkler. Når den brukte symmetriske cipheren bruker CBC, da vil to Initialization Vectors (IVs) - en for hver side av tilkoblingen - fås fra MS-en. Herfra, er meldinger sendt mellom klienten og serveren er kryptert og autentisert. 
+5. Klienten sender en MAC av alle handshake-meldingene
+6. Serveren sender en MAC av alle handshake-meldingene
+
+De siste to stegene forsvarer handshaken fra å bli tuklet med. Listen i første meldingen kan bestå av både svake og sterke algoritmer, og dersom Trudy hadde slettet de sterke i listen, ville hun tvunget klienten til å velge en svak algoritme. Derfor sendes MAC-ene, så serveren kan se etter inkonsistens, samme gjelder klienten. 
+
+
+* De tilfeldige engangsordene brukes for at ikke alle SSL-økter skal være like. Dette gjøres pga. av dersom Trudy har sniffet hele handshaken mellom Bob og Alice, kunne hun bare ha sendt de samme pakkene dagen etterpå og utgitt seg for å være Bob - *"connection replay attack"*. Men de tilfeldige engangsordene gjør at hver SSL-økt er forskjellig. 
+
+
+##### Connection Closure
+
+
+
+### Network-Layer Security: IPsec and Virtual Private Networks
+
+Som vi skal se bruker mange instutisjoner IPsec for å lage **virtuelle private nettverk (VPNs)** som går over det offentlige nettverket. før vi ser på IPsec la oss se på hva det betyr å tilby konfidensialitet på nettverkslaget. Med nettverklagskonfidensialitet mellom et par nettverksentiteter, vil den sendende entiteten kryptere alle payloaden i alle datagrammer som skal bli sendt til den mottakende entiteten. Den krypterte payloaden kan være et TCP-segment, UDP-segment eller en ICMP-melding. Hvis en slik nettverkslagstjeneste var på plass, ville alle data sendt fra en enhet til den andre, inkludert e-post, websider, TCP-håndtrykkmeldinger og administrasjonsmeldinger (som ICMP og SNMP) - være skjult for ethvert tredjeparti som skulle ønske å sniffe nettverket. Av denne grunn er sies det nettverkslagsikkerhet gir "blanket coverage".
+
+
+I tillegg til konfidensialitet kan en nettverkslags-sikkerhetsprotokoll potensielt tilby andre sikkerhetstjenester. For eksempel kan det gi kildeautentisering. En nettverklags-sikkerhetsprotokoll kan gi dataintegritet. En sikkerhetstjeneste for nettverkslag kan også gi *replay-attack*-forebygging, noe som betyr at Bob kunne ha oppdaget duplikatdatagrammer som en angriper setter inn. Vi vil snart se at IPsex faktisk tilbyr mekanismer, for alle disse sikkerhetstjenestene, det vil si konfidensialitet, kildeautentisering, dataintegritet, og replay-attack-forebygging.
+
+### IPsec and Virtual Private Networks (VPNs)
+  
+En instutisjon som strekker seg over flere geografiske områder ønsker ofte egne IP-nettverk, slik at dens veter og servere kan sende data til hverandre på en sikker og konfidensiell måte. For å oppnå dette, må institusjonen sette opp et stand-alone fysisk nettverk - inkludert rutere, koblinger og en DNS infrastruktur - som er helt separat fra det offentlige internettet. Et slikt disjunkt internett, dedikert til en spesiell instutisjon kalles et **privat nettverk**. Ikke overraskende er et privat nettverk dyrt, og institusjonen må kjøpe, installere og vedlikeholde sin egen fysiske nettverksstruktur. 
+
+I stedet for å distribuere og vedlikeholde et privat nettverk, oppretter mange institusjoner i dag VPN-er over det eksisterende Internett-området. Med en **VPN** sendes institusjonens "interoffice" trafikk over det offentlige Internett i stedet for over et fysisk uavhengig nettverk. Men for å gi konfidensialitet, krypteres inter-office trafikken før den går inn på det offentlige Internett. Et enkelt eksempel på et VPN er vist i Figur 8.27.
+
+
+![8.27](https://imgur.com/hPbQ6Nb)
+
+
+Her består institusjonen av et hovedkvarter, et avdelingskontor og reisende salgspersoner som vanligvis har tilgang til Internett fra hotellrommene. (Det er bare én selger som er vist på figuren.) 
+
+I denne VPN, når to verter i hovedkvarteret sender IP datagrammer til hverandre, eller når to verter innenfor avdelingskontoret ønsker å kommunisere, bruker de god gammel vanilla IPv4 (dvs. uten IPsec-tjenester). Når to av institusjonens verter kommuniserer over en sti som går gjennom det offentlige Internett, krypteres trafikken før den kommer inn på Internett.
+
+For å få en følelse av hvordan et VPN fungerer, la oss gå gjennom et enkelt eksempel i sammenheng med figur 8.27. Når en vert i hovedkvarter sender et IP-datagram til en selger på et hotell, konverterer gateway-ruteren i hovedkvarteret vanilla-IPv4-datagrammet til et IPsec datagram og deretter videresender dette IPsec-datagrammet til Internettet. Dette IPsec-datagrammet har faktisk en tradisjonell IPv4-header, slik at ruterne i det offentlige Internett behandler datagrammet som om det var et vanlig IPv4-datagram - for dem er datagrammet er et helt vanlig datagram. 
+
+Men, som vist Figur 8.27, inneholder payloaden til IPsec-datagrammet en IPsec-header, som brukes til IPsec-prosessering; Dessuten er nyttelastet til IPsec datagrammet kryptert. Når IPsec datagrammet kommer til selgerens bærbare, dekrypterer operativsystemet i den bærbare datamaskinen payloaden (og gir andre sikkerhetstjenester, for eksempel verifisering av dataintegritet) og sender den ukrypterte nyttelastet til den øvre-lag protokollen (for eksempel til TCP eller UDP).
+
+Vi har nettopp gitt en oversikt over hvordan en institusjon kan bruke IPsec til å opprette en VPN.
+
+
+### Operational Security: Firewalls and Intrusion Detection Systems
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+## Mangler innledning på 4.5
 
