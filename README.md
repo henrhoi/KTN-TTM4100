@@ -2,6 +2,8 @@
 
 <meta name="author" content="Henrik Høiness">
 
+###### Skrevet av Henrik Høiness
+
 Repository for teori og øvinger til Algoritmer og datastrukturer - TDT 4120.
 
 **Under står notater fra både forelesninger, kompendium og Computer Networking - A Top Down Approach (Kurose, Ross)**
@@ -2153,7 +2155,28 @@ Tjenestene som tilbys av en IPsec-økt inkluderer:
 * *Origin authentication*. Mottakende vert kan være sikker på at kilde IP-adressen i datagrammet er den faktiske kilden til datagrammet.
 
 
- 
+### Routing Algorithms
+
+Typisk er en vert koblet direkte til en ruter, den **defaulte ruteren** for verten (også kalt **first-hop ruter** til verten). Når en vert sender en pakke, vil pakken sendes til sin defaulte ruter. Vi refererer til defaultruteren til kilden som **source router**, og for destinasjonskilden **destination router**. 
+
+![4.27](https://i.imgur.com/FikkTG0.png)
+
+Figuren over viser en graf **G = (V, E)**, som har vektede kanter, og representerer et datanettverk. En routing algorime skal identifisere den minst kostbare stien fra kilder og destinasjoner. Stien fra A til B som har minst total kost, kalles en **least-cost path**. En sti fra A til B med færrest mulig linker kalles **shorest path**. Dersom alle kanter i en graf har samme kost, vil least-cost path også være shortest path.
+
+* En **global routing algoritme** regner ut least-cost pathen fra en kilde til destinasjon ved å bruke komplett, global kunnskap om nettverket. Algoritmen tar tilkoblingene mellom alle noder og alle cost-ene som input. Her kreves det at algoritmen på en eller annen måte kan få tak i all denne informasjonen før den utfører. Algoritmer med global tilstandsinformasjon refereres ofte til som **link-state (LS) algoritmer**.
+* I en **desentralisert routing algoritme** gjøres kalkuleringen av least-cost path på en iterativ, distribuert metode. Ingen node har komplett informasjon om kostnader til alle nettverkslinker. Istedet begynner hver node med kun kunnskapen av kosten til sine egne direkte tilkoblede linker. Da, gjennom en iterativ prosess av kalkuulering og forveksling av informasjon med nabonodene sine, kan en node etterhver kalkulere den least-cost pathen til destinasjonsnoden eller settet med destinasjoner. Den desentraliserte routing algoritmen som er pensum i TTM4100 er kalt en distance-vector (DV) algoritme, siden hver node vedlikeholder en vektor av estimater for costs (avstander) til alle de andre nodene i nettverket. 
+
+
+> En annen måte å klassifisere routing algoritmer er om de er statiske og dynamiske routing algoritmer. Statiske endrer seg sjeldent over tid, mens dynamiske endrer routing paths når nettverkets trafikkmengder eller topologi endres. 
+> 
+> En tredje måte er om algoritmen er load-insensitive eller load-sensitive. I algoritmer som er **lead-sensitive** varierer costen til linkene dynamisk for å reflektere nivået av overbelastning på linken.
+> 
+> I dag er de fleste av internettets routing algoritmer **load-insensitive**, da linkens kostnad ikke eksplisitt reflekterer nåværende eller nylig nivå av overbelastning.
+
+
+
+ <br></br>
+ <br></br>
  <a name="kap5"></a>
 ## Kapittel 5 - The Link Layer: Links, Access Networks, and LANs
 
@@ -3988,6 +4011,10 @@ De siste to stegene forsvarer handshaken fra å bli tuklet med. Listen i første
 
 ##### Connection Closure
 
+På et tidspunkt vil Bob eller Alice ønsker å avslutte SSL-økten. En tilnærming ville være å la Bob avslutte SSL-økten ved å bare avslutte den underliggende TCP-tilkoblingen, det vil si at Bob sender et TCP FIN-segment til Alice. Men en slik naiv design setter scenen for *trunkeringsangrepet*, hvor Trudy igjen kommer i midten av en pågående SSL-økt, og avslutter økten tidlig med et TCP FIN. Hvis Trudy skulle gjøre dette, ville Alice tro at hun fikk alle Bobs data da hun bare fikk en del av det. 
+
+Løsningen på dette problemet er å i typefeltet angi hvorvidt recorden har som oppgave å avslutte SSL-økten. (Selv om SSL-typen sendes i det åpne, er den autentisert ved mottakeren ved bruk av recordens MAC). Ved å inkludere et slikt felt, hvis Alice skulle motta en TCP FIN før den mottok en lukkende-SSL-record,, ville hun vite at noe muffings var på gang.
+
 
 
 ### Network-Layer Security: IPsec and Virtual Private Networks
@@ -4004,7 +4031,7 @@ En instutisjon som strekker seg over flere geografiske områder ønsker ofte egn
 I stedet for å distribuere og vedlikeholde et privat nettverk, oppretter mange institusjoner i dag VPN-er over det eksisterende Internett-området. Med en **VPN** sendes institusjonens "interoffice" trafikk over det offentlige Internett i stedet for over et fysisk uavhengig nettverk. Men for å gi konfidensialitet, krypteres inter-office trafikken før den går inn på det offentlige Internett. Et enkelt eksempel på et VPN er vist i Figur 8.27.
 
 
-![8.27](https://imgur.com/hPbQ6Nb)
+![8.27](https://i.imgur.com/hPbQ6Nb.png)
 
 
 Her består institusjonen av et hovedkvarter, et avdelingskontor og reisende salgspersoner som vanligvis har tilgang til Internett fra hotellrommene. (Det er bare én selger som er vist på figuren.) 
@@ -4018,56 +4045,141 @@ Men, som vist Figur 8.27, inneholder payloaden til IPsec-datagrammet en IPsec-he
 Vi har nettopp gitt en oversikt over hvordan en institusjon kan bruke IPsec til å opprette en VPN.
 
 
+### Securing Wireless LANs
+
+Sikkerhetsspørsmålet i 802.11 har fått stor oppmerksomhet både i tekniske kretser og i media. Selv om det har vært betydelig diskusjon, har det vært liten debatt - det synes å være universell enighet om at den opprinnelige 802.11-spesifikasjonen inneholder en rekke alvorlige sikkerhetsfeil. Faktisk kan offentlig programvare bli lastet ned som utnytter disse hullene, slik at de som bruker sikkerhetsmekanismene til vanilla 802.11 er like åpne, for sikkerhetsangrep, som brukere som ikke bruker noen sikkerhetsfunksjoner i det hele tatt.
+
+Vi skal nå se på sikkerhetsmekanismen kjent som **Wired Equivalent Privace (WEP)**. Som navnet hinter til, er det ment at WEP skal tilby et nivå av sikkerhet lignende som det vi finner i kablede nettverk. Vi skal snart se på sikkerhetshullene i WEP. 
+
+#### Wired Equivalent Privacy (WEP)
+
+IEE 802.11 WEP-protokollen ble designet i 1999 for å tilby autentisering og datakryptering mellom en vert og et trådløst aksesspunkt (dvs. basestasjon) ved å bruke en symmetrisk delt nøkkel-tilnærming. WEP spesifiserer ikke en nøkkeladministreringsalgoritme, så det er antatt at verten og AP-en har på en måte blitt enige om en nøkkel via en out-of-band-metode. Autentikasjonen skjer slik:
+
+1. En trådløs vert foresprø autentisering av et aksesspunkt
+2. Aksesspunktet responderer til autentiseringsforespørselen med et 128-byte engangsord.
+3. Den trådløse verten krypterer engangsordet med den symmetriske nøkkelen som den deler med aksesspunktet. 
+4. Aksesspunktet dekryptererer vertens krypterte engangsord. 
+
+
+Dersom det dekrypterte engangsordet matcher engangsordet som originalt ble sendt, da er verten autentisert av aksesspunktet. 
+
+WEP-datakrypteringsalgoritmen er illustrert i Figur 8.30. En hemmelig 40-bit symmetrisk nøkkel, K<sub>S</sub>, er antatt å bære kjent av både verten og AP-en. I tillegg, en 24-bit IV (Initialization vector) er lagt på den 40-bit nøkkelen for å lage en 64-bit nøkkel som skal krypteres i en enkelt ramme. 
+IV-en vil endre seg fra en ramme til en annen, og dermed har hver ramme forskjellige 64-bit nøkler. 
+
+![8.30](https://i.imgur.com/U82yydY.png)
+
+Kryptering skjer slik:
+
+* En 4-byte CRC-verdi blir laget for datapayloaden. Databayloaden og de 4 CRC-bytene er så kryptert med RC4-stream cipheren. Det er nok å vite at RC4 algoritmen kun produserer en strøm med nøkkelverdier, k<sub>1</sub><sup>*IV*</sup>, k<sub>2</sub><sup>*IV*</sup>, k<sub>3</sub><sup>*IV*</sup>,... som blir brukt for å kryptere dataen og CRC-verdiene i en ramme. 
+* Av praktiske grunner kan vi se for oss at operasjonene blir utført byte for byte. Krypteringen skjer ved å XOR-e den *i*'te byten med data, *d<sub>i</sub>*, med den *i*'te nøkkelen, *k<sub>i</sub><sup>IV</sup>*, i strømmen av nøkkelverdien generert av (K<sub>S</sub>, IV)-paret for å produsere den *i*'te byten med ciphertekst, *c<sub>i</sub>*:
+
+ 
+![ci](https://i.imgur.com/z09wxRu.png)
+
+IV-verdien endres fra ramme til ramme, og er inkludert i *klartekst* i headeren til hver WEP-krypterte 802.11 ramme, som vist i Figur 8.30.
+Mottakeren bruker den hemmelige 40-bit symmetriske nøkkelen, legger til IV-en, og får den 64-bit nøkkelen og dekrypterer rammen:
+
+![di](https://i.imgur.com/LE9VZCw.png)
+
+* Riktig bruk av RC4 algoritmen krever at den samme 64-bit økkelen *aldri* brukes mer enn en gang. Men husk at en WEP-nøkkel endrer seg fra ramme til ramme. For en gitt K<sub>S</sub>, betyr det at det kun er 2^24 unike nøkler. Dersom disse nøklene er valgt tilfeldig , er sannsynligheten for å ha valgt like IV-verdier (og dermed samme 64-bit nøkkel) mer enn 99% etter kun 12,000 rammer. Med 1Kbyte rammer og en overføringsrate på 11Mbps, tar det kun et par sekunder for å sende 12,000 rammer. 
+
+* Dersom Trudy eavesdropper og ser at samme k<sub>i</sub><sup>IV</sup> brukes flere ganger kan hun bruke de kjente verdiene for *d<sub>i</sub>* og *c<sub>i</sub>* (funnet med XOR som over) for å regne ut *k<sub>i</sub><sup>IV</sup>*.  Neste gang Trudy ser at samme IV blir brukt, vet hun nøkkelsekvensen <sub>1</sub><sup>*IV*</sup>, k<sub>2</sub><sup>*IV*</sup>, k<sub>3</sub><sup>*IV*</sup>,..., og kan dermed dekryptere den krypterte meldingen. 
+
+Det er også andre sikkerhetsbekymringer med WEP. Dersom visse svake nøkler i RC4, så vl det være mulig å angripe. WEP involverer også CRC bits. Dersom Trudy endrer meldingen, og regner om CRC-summen på nytt og bytter den ut med den gamle CRC-en vil mottakeren ta imot pakken og tro at alt er bra. *Mangler meldingsintegritet.
+
+
+
+
 ### Operational Security: Firewalls and Intrusion Detection Systems
 
+Når trafikk ankommer/forlater et nettverk blir sikkerhetsskjekket, logget, droppet og videresendt, blir det gjort av operasjonelle enheter kjent som firewalls/brannmurer, instrusion detection systems (IDSs), og instrusion prevention systems (IPSs)
+
+### Firewalls
+
+En brannmur er en kombinasjon av maskinvare og programvare som isolererer en organisasjons interne nettverk fra internettet, som tillater noen pakker å passere og andre blokkeres. En brannvegg tillater en nettverksadministrator å kontrollere asessene mellom den ytre verden og ressursene i nettverket, ved å styre trafikkflyten til og fra disse ressursene. En brannmyr har tre mål:
+
+* *All traffik fra utisden til insiden, ig vice versa, passerer gjennom brannmuren*. Figur 8.33 viser en brannmur som sitter rett på grensen mellom administrerte nettverket og resten av Internettet.
+* *Kun autorisert traffik, som definert av den lokale sikkerhetspolicyen, vil bli tillatt å passere.* Ettersom all trafikk går igjennom brannmuren, kan brannmuren begrense aksess til autorisert traffik. 
+* *Brannmuren selv må være immun mot penetrering.* Brannmuren selv er en enhet koblet til nettverket. 
+
+
+Cisco og Check Point er de to ledende brannmur-leverandørene i dag. Man kan også lett lage en brannmur (packet filter) fra en Linux box ved å bruke iptables (software fra Linux). 
+
+Brannmurer er klassifisert i tre kategorier: **traditional packet filters**, **stateful filters** og **application gateways**. 
+
+![8.33](https://i.imgur.com/waZwu0y.png)
+
+#### Traditional Packet Filters
+
+Som vist i figur 8.33 har en organisasjon typisk en gateway ruter som kobler det interne internettet til ISP-en. All traffik som forlater og ankommer det interne internettet passerer denne ruteren, og det er i denne ruteren hvor **pakke filtering** skjer. Et pakkefilter studerer hvert datagram i isolasjon, og bestemmer om datagrammet skal få lov å passere eller skal droppes. Filtreringsavgjørelser er typisk basert på:
+
+* IP kilde eller destinasjonsadresse
+* Protokoltype i IP-datagramfeltet: TCP, UDP, ICMP, OSPF, osv. 
+* TCP eller UDP filde og destinasjonsport
+* TCP flagbits: SYN ACK, osv. 
+* ICMP meldingstype
+* Forskjellige regler for datagrammer som ankommer eller forlater nettverket
+* Forskjellige regler for de forskjellige ruterinterfacene. 
+
+
+En nettverksadministrator konfigurerer en brannmur basert på policyen til organisasjonen. Tabell 8.5 lister en rekke mulige policies som en organisasjon kan ha: 
+
+
+![table8.5](https://i.imgur.com/cooIP7U.png)
+
+> Brannmur-regler er implementert i ruterere med aksesskontrolllister, der hvert rutergrensesnitt har en egen liste.
+
+
+![tablle8.6](https://i.imgur.com/ZDiSRxz.png)
+
+
+#### Stateful Packet Filters
+
+I et tradisjonelt pakefilter, gjøres filtreringsbeslutninger på hver pakke i isolasjon. Stateful filters tracker faktisk TCP-tilkoblinger, og bruker denne kunskaper til filtreringsbeslutninger. 
+
+For å forstå stateful-filtre, la vi undersøke tilgangskontrollisten i tabell 8.6. Selv om det er ganske restriktivt, tillater tilgangskontrollisten i tabell 8.6 likevel at enhver pakke som kommer fra utsiden med ACK = 1 og kildeport 80 for å komme gjennom filteret. Slike pakker kan brukes av angripere i forsøk på å krasje interne systemer med misdannede pakker, utføre DoS-angrep eller kartlegge internettet. 
+
+Den naive løsningen er å blokkere TCP ACK-pakker også, men en slik tilnærming vil hindre at organisasjonens interne brukere surfer på nettet.
+Stateful filtre løser dette problemet ved å spore alle pågående TCP-tilkoblinger i en tilkoblingstabell. Dette er mulig fordi brannmuren kan observere begynnelsen på en ny tilkobling ved å observere en treveishåndtrykk (SYN, SYNACK og ACK); og det kan observere slutten av en forbindelse når det ser en FIN-pakke for tilkoblingen. B
+
+> Brannmuren kan også (konservativt) anta at forbindelsen er over når den ikke har sett noen aktivitet over forbindelsen, for eksempel 60 sekunder.
+
+
+I tillegg inneholder stateful-filteret en ny kolonne, "check connection", i tilgangskontrolllisten, som vist i tabell 8.8. Merk at tabell 8.8 er identisk med tilgangskontrollisten i tabell 8.6, bortsett fra nå angir det at tilkoblingen skal kontrolleres for to av reglene.
+
+![table8.8](https://i.imgur.com/nvxyNpp.png)
+
+#### Application Gate
+
+For å få et finere-nivås sikerherhet, må brannmurer kombinere pakkefiltrering med applikasjons gateways. Applikasjons gatewayer ser forbi IP/TCP/UDP headerne og gjør policy-beslutninger basert på applikasjonsdata. En **applikasjons gateway** er en applikasjonsspesifik server der all applikasjonsdata må igjennom. Flere applikasjonsgatewayer kan kjøre på samme vert, men hver gateway er en separat server med sine egne prosesser. 
+
+![8.34](https://i.imgur.com/xMWfHaS.png)
+
+For å få noen innsikt i applikasjons gatewayer, la oss designe en brannmur som tillater kun et begrenset sett av interne brukere til å Telnete til utsiden og forhindre alle eksterne klienter å Telnete inn. 
+
+En slik policy kan oppnås ved å implementere en kombinasjon av et pakkefilter (i en ruter) og en Telnet-applikasjonsgateway, som vist i figur 8.34. 
+
+* Ruterenes filter er konfigurert til å blokkere alle Telnet-tilkoblinger unntatt de som kommer fra IP-adressen til applikasjonsgatewayen. En slik filterkonfigurasjon tvinger alle utgående Telnet-tilkoblinger til å passere gjennom applikasjonsgatewayen. 
+* Tenk nå en intern bruker som ønsker å Telnete til omverdenen. Brukeren må først opprette en Telnet-økt med applikasjonsgatewayen. Et program som kjører i gatewayen, som lytter etter innkommende Telnet-økter, spør brukeren om brukernavn og passord. Når brukeren forsyner denne informasjonen, sjekker programgatewayen for å se om brukeren har tillatelse til Telnet til omverdenen. Hvis ikke, blir Telnet-tilkoblingen fra den interne brukeren til gatewayen avsluttet av gatewayen. Hvis brukeren har tillatelse, så vil gatewayen:
+	1. Spørre brukeren om vertsnavnet til den eksterne verten som brukeren vil koble 	til.
+	2. Sette opp en Telnet-økt mellom gatewayen og den eksterne verten
+	3. være en relé som reléer all data som kommer fra brukeren til den eksterne verten, og reléer til brukeren alle data som kommer fra den eksterne verten. 
+
+Dermed utfører Telnet-applikasjonsgatewayen ikke bare brukerautorisasjon, men fungerer også som en Telnet-server og en Telnet-klient, når den reléer  informasjon mellom brukeren og den eksterne Telnet-serveren. 
+
+> Merk at filteret tillater trinn 2 fordi gatewayen initierer Telnet-tilkoblingen til omverdenen.
+
+
+Interne nettverk har ofte flere applikasjonsgateways, for eksempel gateways for Telnet, HTTP, FTP og e-post.
+
+Applikasjonsgateways kommer ikke uten sine ulemper:
+
+* For det første er det nødvendig med en annen applikasjonsgateway for hver applikasjon. 
+* For det andre er det en ytelsesstraff som skal betales, da alle data vil bli videresendt via gatewayen. Dette blir en bekymring, spesielt når flere brukere eller applikasjoner bruker samme gateway-maskin. 
+* Endelig må klientprogramvaren vite hvordan man skal kommunisere med gatewayen når brukeren gjør en forespørsel, og må vite hvordan å fortelle applikasjonsgatewayen hvilken ekstern server den skal kobles til.
 
 
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-## Mangler innledning på 4.5
-
+###### Skrevet av Henrik Høiness
